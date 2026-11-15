@@ -28,9 +28,17 @@ All intermediate files go in a temporary work directory (`$WORK`, e.g. created w
 4. **Sample** — Run
    `python3 ${CLAUDE_SKILL_DIR}/scripts/sample.py --metrics $WORK/metrics.json --out $WORK/samples.json`
    and read `$WORK/samples.json` (already redacted).
-5. **Score** — Following [references/rubric.md](references/rubric.md), score the six axes 1–5 from the samples and metrics. Also decide every condition marked （判定） in [references/types.md](references/types.md). Write `$WORK/scores.json`.
-6. **Select** — Run
-   `python3 ${CLAUDE_SKILL_DIR}/scripts/select.py --scores $WORK/scores.json --metrics $WORK/metrics.json --lang <ja|en> --out $WORK/card.json`
+5. **Score** — Following [references/rubric.md](references/rubric.md), score the six axes 1–5 from the samples and metrics (apply the rubric's cap rule). Then decide each judgment listed by
+   `python3 ${CLAUDE_SKILL_DIR}/scripts/choose.py --list-judgments`
+   as `"no"`, `"yes"` or `"strong"` (when unsure, `"no"`). Write `$WORK/scores.json`:
+   ```json
+   {"scores": {"context": 3, "delegation": 4, "verification": 4, "autonomy": 3, "efficiency": 3, "systems": 2},
+    "judgments": {"precision": "yes", "keeneye": "no"},
+    "evidence": {"context": "one or two sentences per axis, no identifying details"}}
+   ```
+6. **Choose** — Run
+   `python3 ${CLAUDE_SKILL_DIR}/scripts/choose.py --scores $WORK/scores.json --metrics $WORK/metrics.json --lang <ja|en> --out $WORK/card.json --save-history`
+   This picks the type, ability, quirk and rare status with the rules in [references/types.md](references/types.md) and fills in its fixed wording. `--save-history` keeps only the six scores (in `~/.claude/my-ai-title/history.json`) so the next run can detect growth. For a second language, run it again with the other `--lang`.
 7. **Render** — Run
    `python3 ${CLAUDE_SKILL_DIR}/scripts/render.py --card $WORK/card.json --out ./my-ai-title-card.png`
    (English: `./my-ai-title-card-en.png`). If the file already exists, ask before overwriting.

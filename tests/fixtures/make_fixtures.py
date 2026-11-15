@@ -13,7 +13,7 @@ import json
 import shutil
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 HERE = Path(__file__).resolve().parent
 OUT = HERE / "claude"
@@ -259,15 +259,185 @@ def skills_on_disk() -> None:
     p.write_text("---\nname: deploy-check\ndescription: synthetic\n---\n", encoding="utf-8")
 
 
+# --- one scenario per type (tests/fixtures/types/<type>/) -----------------------
+# Each scenario = synthetic logs + the scores Claude would plausibly give +
+# the type/ability choose.py is expected to pick. Window: 2026-10-01 .. 10-31.
+
+TYPES_OUT = HERE / "types"
+TBASE = datetime(2026, 10, 2, 1, 0, tzinfo=timezone.utc)
+
+
+def _sid(kind: int, i: int) -> str:
+    return f"{kind:02d}{i:06d}-0000-4000-8000-000000000000"
+
+
+def _write_scenario(name: str, logs: List[Log], scores: dict, expected: dict,
+                    judgments: Optional[dict] = None, skills: Sequence[str] = ()) -> None:
+    root = TYPES_OUT / name
+    for lg in logs:
+        lg.write(root / "projects" / lg.cwd.replace("/", "-") / f"{lg.sid}.jsonl")
+    for sk in skills:
+        p = root / "skills" / sk / "SKILL.md"
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_text(f"---\nname: {sk}\n---\n", encoding="utf-8")
+    doc = {"scores": scores, "judgments": judgments or {}}
+    (root / "scores.json").write_text(json.dumps(doc, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    (root / "expected.json").write_text(json.dumps(expected, indent=2) + "\n", encoding="utf-8")
+
+
+def _session(kind: int, i: int, cwd: str = "/Users/demo/Projects/app") -> Log:
+    return Log(_sid(kind, i), cwd, TBASE + timedelta(days=i % 28, hours=i // 28))
+
+
+def scenario_sniper() -> None:
+    """Many tasks finished in one or two instructions, no rework."""
+    logs = []
+    for i in range(24):
+        lg = _session(1, i)
+        lg.prompt("ヘッダーの余白を詰めて。完了条件は既存テストが通ること。")
+        lg.tool("Edit", file_path="/Users/demo/Projects/app/src/header.css", old_string="a", new_string="b")
+        lg.tick(600).tool("Bash", command="npm test")
+        lg.say("余白を詰めました。テストは通っています。")
+        if i % 2:
+            lg.prompt("ありがとう、コミットして")
+            lg.tick(300).tool("Bash", command="git commit -am header")
+            lg.say("コミットしました。")
+        logs.append(lg)
+    _write_scenario("sniper", logs,
+                    {"context": 4, "delegation": 3, "verification": 4, "autonomy": 2, "efficiency": 5, "systems": 3},
+                    {"type": "sniper", "ability_id": "bullseye", "rare": True, "quirk_id": "hover"})
+
+
+def scenario_appraiser() -> None:
+    """Has the AI check the screen again and again."""
+    logs = []
+    for i in range(6):
+        lg = _session(2, i)
+        lg.prompt("ログイン画面のボタン配置を直して、ブラウザで表示を確認して")
+        lg.tool("Edit", file_path="/Users/demo/Projects/app/src/login.tsx", old_string="a", new_string="b")
+        for _ in range(5):
+            lg.tool("mcp__playwright__browser_take_screenshot")
+        lg.say("配置を修正し、スクリーンショットで確認しました。")
+        logs.append(lg)
+    _write_scenario("appraiser", logs,
+                    {"context": 3, "delegation": 3, "verification": 5, "autonomy": 3, "efficiency": 3, "systems": 2},
+                    {"type": "appraiser", "ability_id": "farsight", "rare": False, "quirk_id": "handwritten"})
+
+
+def scenario_alchemist() -> None:
+    """Calls home-made skills every day."""
+    logs = []
+    for i in range(8):
+        lg = _session(3, i)
+        lg.command("release-notes")
+        lg.tool("Skill", skill="release-notes")
+        lg.say("リリースノートを作りました。")
+        lg.prompt("次は週報も")
+        lg.tool("Skill", skill="weekly-report")
+        lg.say("週報を作りました。")
+        logs.append(lg)
+    _write_scenario("alchemist", logs,
+                    {"context": 3, "delegation": 3, "verification": 2, "autonomy": 3, "efficiency": 4, "systems": 5},
+                    {"type": "alchemist", "ability_id": "hundredtools", "rare": False, "quirk_id": "gullible"},
+                    skills=["release-notes", "weekly-report"])
+
+
+def scenario_commander() -> None:
+    """Runs several sub-agents in parallel."""
+    logs = []
+    for i in range(5):
+        lg = _session(4, i)
+        lg.prompt("Split this refactor across agents: API, UI and docs. Run them in parallel.")
+        for part in ("api", "ui", "docs", "tests", "review"):
+            lg.tool("Agent", description=part, prompt=f"handle {part}", run_in_background=True)
+        lg.say("All five agents finished their parts.")
+        logs.append(lg)
+    _write_scenario("commander", logs,
+                    {"context": 3, "delegation": 5, "verification": 3, "autonomy": 4, "efficiency": 3, "systems": 2},
+                    {"type": "commander", "ability_id": "clone", "rare": False, "quirk_id": "handwritten"})
+
+
+def scenario_architect() -> None:
+    """Keeps the project notes (CLAUDE.md) up to date."""
+    logs = []
+    for i in range(8):
+        lg = _session(5, i)
+        lg.prompt("今日決めた命名ルールをCLAUDE.mdに追記して")
+        lg.tool("Edit", file_path="/Users/demo/Projects/app/CLAUDE.md", old_string="a", new_string="b")
+        lg.say("追記しました。")
+        logs.append(lg)
+    _write_scenario("architect", logs,
+                    {"context": 5, "delegation": 3, "verification": 3, "autonomy": 2, "efficiency": 4, "systems": 3},
+                    {"type": "architect", "ability_id": "sage", "rare": False, "quirk_id": "hover"})
+
+
+def scenario_partner() -> None:
+    """Long back-and-forth conversations; no axis stands out."""
+    logs = []
+    for i in range(5):
+        lg = _session(6, i)
+        lg.prompt("新しい料金プランの案を一緒に考えたい")
+        lg.tool("Read", file_path="/Users/demo/Projects/app/docs/pricing.md")
+        lg.say("いくつか方向性があります。")
+        topics = ["学生向け", "法人向け", "年払い", "無料枠", "競合比較", "解約率", "値上げ", "地域差",
+                  "サポート", "上限設定", "紹介制度", "季節要因", "広告", "API利用", "請求書払い",
+                  "ストレージ", "チーム機能", "移行期間", "告知方法", "返金", "まとめ"]
+        for j, topic in enumerate(topics):
+            lg.prompt(f"{topic}の観点{'も気になる' if j % 2 else 'だとどうなる？'}")
+            lg.say("その観点だと、こう考えられます。")
+        logs.append(lg)
+    _write_scenario("partner", logs,
+                    {"context": 3, "delegation": 3, "verification": 3, "autonomy": 3, "efficiency": 3, "systems": 3},
+                    {"type": "partner", "ability_id": "sparring", "rare": False, "quirk_id": "marathon"},
+                    judgments={"partner_adopted": "yes"})
+
+
+def scenario_explorer() -> None:
+    """Early days: tries many different tools."""
+    tools = ["Read", "Grep", "Glob", "WebSearch", "WebFetch", "Bash", "Edit", "Write",
+             "mcp__notion__search", "mcp__figma__get_screenshot", "mcp__slack__post", "TodoWrite", "NotebookEdit"]
+    logs = []
+    for i in range(3):
+        lg = _session(7, i)
+        lg.prompt("これもAIでできるか試してみたい")
+        for t in tools:
+            lg.tool(t, file_path="/Users/demo/Projects/app/notes.txt") if t in ("Read", "Edit", "Write") else lg.tool(t)
+        lg.say("試してみました。")
+        logs.append(lg)
+    _write_scenario("explorer", logs,
+                    {"context": 2, "delegation": 3, "verification": 2, "autonomy": 2, "efficiency": 3, "systems": 2},
+                    {"type": "explorer", "ability_id": "curious", "rare": False, "quirk_id": "gullible"})
+
+
+def scenario_conductor() -> None:
+    """Strong everywhere; parallel work with almost no rework."""
+    logs = []
+    for i in range(6):
+        lg = _session(8, i, cwd=f"/Users/demo/Projects/app/.claude/worktrees/w{i}")
+        lg.prompt("Implement the export feature end to end and verify it.")
+        lg.tool("Agent", description="tests", prompt="write tests")
+        lg.tool("Edit", file_path="/Users/demo/Projects/app/src/export.ts", old_string="a", new_string="b")
+        lg.tool("Bash", command="npm test")
+        lg.say("Export implemented; tests pass.")
+        logs.append(lg)
+    _write_scenario("conductor", logs,
+                    {"context": 4, "delegation": 5, "verification": 4, "autonomy": 4, "efficiency": 5, "systems": 4},
+                    {"type": "conductor", "ability_id": "legion", "rare": False, "quirk_id": "surplus"})
+
+
 def main() -> None:
-    if OUT.exists():
-        shutil.rmtree(OUT)
+    for d in (OUT, TYPES_OUT):
+        if d.exists():
+            shutil.rmtree(d)
     session_basic()
     session_power()
     session_secrets()
     session_old()
     skills_on_disk()
-    print(f"wrote {OUT}")
+    for f in (scenario_sniper, scenario_appraiser, scenario_alchemist, scenario_commander,
+              scenario_architect, scenario_partner, scenario_explorer, scenario_conductor):
+        f()
+    print(f"wrote {OUT} and {TYPES_OUT}")
 
 
 if __name__ == "__main__":

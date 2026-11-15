@@ -49,9 +49,9 @@
 | 技名 | 二つ名 | 英語 | レア二つ名 | レア英語 | セリフ | レアセリフ | 条件 | 根拠の文 |
 |---|---|---|---|---|---|---|---|---|
 | 放牧 | 悠然の | Unhurried | 泰然自若の | Imperturbable | 「慌てなくていい、もう回ってる」 | 「もう全部、回ってる」 | 人が止めずに完走した自律実行が多い | AIを放っておいても、たいてい最後まで走りきる。牧場主の風格 |
-| 分身の術 | 影分身の | Shadow-Clone | 無限分身の | Infinite Clone | 「人手？いくらでも増やせるけど」 | 「人手は、無限にいる」 | 並列で動かしたエージェント数が多い | 気づけばAIを何体も同時に動かしている。本人は1人 |
-| 丸ごと委任 | 全権の | Full-Authority | 絶対権限の | All-Powerful | 「全部、承認」 | 「ハンコは、もう要らない」 | 指示1回あたりの変更範囲が広い | ひとこと頼むと、プロジェクトがまるごと動き出す |
-| 一言委任 | 一声の | One-Word | 鶴の一声の | Final Word | 「…頼む」 | 「ん」 | 短い指示で大きな範囲を任せている | 指示は短いのに、任せる範囲は広い。信頼の厚さが違う |
+| 分身の術 | 影分身の | Shadow Clone | 無限分身の | Infinite Clone | 「人手？いくらでも増やせるけど」 | 「人手は、無限にいる」 | 並列で動かしたエージェント数が多い | 気づけばAIを何体も同時に動かしている。本人は1人 |
+| 丸ごと委任 | 全権の | Sovereign | 絶対権限の | All-Powerful | 「全部、承認」 | 「ハンコは、もう要らない」 | 指示1回あたりの変更範囲が広い | ひとこと頼むと、プロジェクトがまるごと動き出す |
+| 一言委任 | 一声の | Laconic | 鶴の一声の | Final Word | 「…頼む」 | 「ん」 | 短い指示で大きな範囲を任せている | 指示は短いのに、任せる範囲は広い。信頼の厚さが違う |
 
 - レア実績：人が途中で止めずに完走した自律実行が10回以上
 
@@ -67,8 +67,8 @@
 | 疑いの眼 | 懐疑の | Skeptical | 絶対懐疑の | Utterly Skeptical | 「その「できました」、根拠は？」 | 「私が見るまで、何も完了していない」 | AIの完了報告のあとに追加確認を頼む割合が高い | AIの「完了しました」を、まず疑ってかかる |
 | 目視の鬼 | 千里眼の | Clairvoyant | 万里眼の | All-Seeing | 「画面、見せてもらえる？」 | 「見なくても分かる。ズレてる」 | 画面のスクリーンショットや動作確認をさせる回数が多い | 動いた、では信じない。画面を見せてもらうまでが確認 |
 | テスト至上主義 | 鉄壁の | Ironclad | 金剛不壊の | Indestructible | 「テストが通るまでは信じない」 | 「バグのほうから逃げていく」 | テスト実行の回数が多い | 何かを変えたら、とりあえずテスト。もはや呼吸 |
-| あら探し名人 | 慧眼の | Keen-Eyed | 神眼の | Divine-Eyed | 「ほら、ここ。ズレてる」 | 「直す前から、ここだと思ってた」 | AIの誤りを指摘し、それが正しかった回数が多い（判定） | AIの小さな間違いを、なぜかすぐ見つける |
-| 多重チェック | 多重結界の | Multi-Barrier | 無限結界の | Infinite Barrier | 「確かめ方は一つじゃない」 | 「確かめ方は、あと100通りある」 | 検証手段の種類が多い | 確かめ方を何通りも持っていて、場面で使い分ける |
+| あら探し名人 | 慧眼の | Keen-Eyed | 神眼の | Infallible | 「ほら、ここ。ズレてる」 | 「直す前から、ここだと思ってた」 | AIの誤りを指摘し、それが正しかった回数が多い（判定） | AIの小さな間違いを、なぜかすぐ見つける |
+| 多重チェック | 多重結界の | Thorough | 無限結界の | Infinite Barrier | 「確かめ方は一つじゃない」 | 「確かめ方は、あと100通りある」 | 検証手段の種類が多い | 確かめ方を何通りも持っていて、場面で使い分ける |
 
 - レア実績：AIが完了と言った後に人が問題を見つけた回数がゼロ、かつ検証手段を3種類以上使っている
 
@@ -81,7 +81,7 @@
 
 | 技名 | 二つ名 | 英語 | レア二つ名 | レア英語 | セリフ | レアセリフ | 条件 | 根拠の文 |
 |---|---|---|---|---|---|---|---|---|
-| 段取り八分 | 先見の | Visionary | 未来視の | Future-Seeing | 「まず全体像から話そう」 | 「その質問、3日後に来ると思ってた」 | 着手前に計画を立てさせる割合が高い | いきなり作らせない。まず計画を出させてから |
+| 段取り八分 | 先見の | Visionary | 未来視の | Prescient | 「まず全体像から話そう」 | 「その質問、3日後に来ると思ってた」 | 着手前に計画を立てさせる割合が高い | いきなり作らせない。まず計画を出させてから |
 | 前提共有 | 叡智の | Sage | 大叡智の | Grand Sage | 「それ、前にメモしておいた」 | 「それ、半年前に書いておいた」 | プロジェクトの前提メモをよく更新している | プロジェクトの前提をこまめに書き残していて、AIが迷わない |
 | 伝達完了 | 明晰の | Lucid | 明鏡止水の | Serene | 「ゴールはここ。以上」 | 「説明は、もういらない」 | 情報不足による手戻りがないタスクが続いている（判定） | 伝え漏れがほとんどない。AIが聞き返す必要がない |
 | 調査から入る | 探求の | Inquiring | 真理探究の | Truth-Seeking | 「原因は、まだ決めつけない」 | 「原因の原因まで、見に行く」 | 原因を決めつけず、症状を渡して調べさせるタスクが多い（判定） | 原因を決めつけない。まずAIに調べさせてから考える |
@@ -98,9 +98,9 @@
 | 技名 | 二つ名 | 英語 | レア二つ名 | レア英語 | セリフ | レアセリフ | 条件 | 根拠の文 |
 |---|---|---|---|---|---|---|---|---|
 | 二度手間アレルギー | 怠惰の | Lazy | 究極怠惰の | Supremely Lazy | 「働くのは、仕組みのほう」 | 「今日も一行も書いてない」 | 繰り返された指示が、仕組み化のあと出なくなった | 同じことを何度か頼んだら、すぐ仕組みにしてしまう |
-| 道具箱 | 百器の | Hundred-Tool | 千器の | Thousand-Tool | 「その作業、道具あるよ」 | 「道具がない作業、ある？」 | 自作の再利用できる仕組みの呼び出しが多い | 自分で作った道具を、毎日のように使いこなしている |
-| 自動錬成 | 永久機関の | Perpetual-Motion | 真・永久機関の | Truly Perpetual | 「勝手に回るようにしといた」 | 「止め方、忘れちゃった」 | 自動で動く仕掛けがよく発動している | 本人が何もしなくても、仕掛けが勝手に働いている |
-| 量産体制 | 量産の | Mass-Production | 大量錬成の | Mass Transmutation | 「また一つ、作っちゃった」 | 「寝てる間に10個できてた」 | 新しく作った仕組みが多く、かつ使われている | 新しい仕組みを次々に生み出して、ちゃんと使っている |
+| 道具箱 | 百器の | Resourceful | 千器の | Infinitely Resourceful | 「その作業、道具あるよ」 | 「道具がない作業、ある？」 | 自作の再利用できる仕組みの呼び出しが多い | 自分で作った道具を、毎日のように使いこなしている |
+| 自動錬成 | 永久機関の | Perpetual | 真・永久機関の | Truly Perpetual | 「勝手に回るようにしといた」 | 「止め方、忘れちゃった」 | 自動で動く仕掛けがよく発動している | 本人が何もしなくても、仕掛けが勝手に働いている |
+| 量産体制 | 量産の | Prolific | 大量錬成の | Mass Transmutation | 「また一つ、作っちゃった」 | 「寝てる間に10個できてた」 | 新しく作った仕組みが多く、かつ使われている | 新しい仕組みを次々に生み出して、ちゃんと使っている |
 
 - レア実績：自作の再利用できる仕組みを月20回以上使っている
 
@@ -113,7 +113,7 @@
 
 | 技名 | 二つ名 | 英語 | レア二つ名 | レア英語 | セリフ | レアセリフ | 条件 | 根拠の文 |
 |---|---|---|---|---|---|---|---|---|
-| 一撃必中 | 百発百中の | Bullseye | 千発千中の | Never-Missing | 「当然でしょ」 | 「外し方を知らない」 | 指示2回以内で終わるタスクが多い | たいてい1〜2回の指示で片づく。AIが質問する隙がない |
+| 一撃必中 | 百発百中の | Bullseye | 千発千中の | Unerring | 「当然でしょ」 | 「外し方を知らない」 | 指示2回以内で終わるタスクが多い | たいてい1〜2回の指示で片づく。AIが質問する隙がない |
 | 精密射撃 | 精密の | Precision | 神業の | Godhand | 「あと1ミリ、右」 | 「0.1ミリ、右」 | 依頼に完了条件をつけている割合が高い（判定） | 依頼にはほぼ毎回ゴールが書いてある。AIは迷子になれない |
 | 早撃ち | 閃光の | Flash | 光速の | Lightspeed | 「もう終わったけど？」 | 「頼まれる前に、終わってた」 | タスク完了までの時間が短い | 頼んでから終わるまでが、とにかく速い |
 | 無言の圧 | 沈黙の | Silent | 絶対沈黙の | Utterly Silent | 「…指示は一度しか言わない」 | 「……」 | 短い指示で通している | 指示は短いのに、ちゃんと通る。AIが空気を読んでいる |
@@ -197,3 +197,87 @@
 3. 対象期間のセッションが20以上
 
 しきい値は仮置き。実際の分布を見て、全体のおよそ10人に1人がレアになるよう調整する。
+
+---
+
+## ID・カード番号・英語版（English）
+
+英語版カードと画像ファイル名に使う。技名のIDは画像ファイル名 `{type}_{ID}.png` に使う。カード番号（No.）はこの表の上からの順番。英語の文は自然な英語を優先し、意味を変えない範囲で言い回しを整えている。
+
+### タイプ
+
+| type | 役職 | Role | 余裕のクセ（英語） |
+|---|---|---|---|
+| commander | 司令塔 | Commander | The AI is so capable there's no work left to do |
+| appraiser | 鑑定士 | Appraiser | Takes a while to trust anything |
+| architect | 建築家 | Architect | The prep is so thorough it looks like a slow start |
+| alchemist | 錬金術師 | Alchemist | Building tools is so fun the real task gets forgotten |
+| sniper | 狙撃手 | Sniper | Tickets with three-line specs |
+| partner | 相棒 | Partner | Being told "get to the point" |
+| explorer | 冒険者 | Explorer | (not used) |
+| conductor | 指揮者 | Conductor | Asked how to use AI so often that lunch disappears |
+
+### 技名
+
+| type | ID | 技名 | Name | Quote | Rare quote | Evidence |
+|---|---|---|---|---|---|---|
+| commander | pasture | 放牧 | Free Range | No need to rush. It's already running. | It's all running already. | Leave the AI alone and it usually runs all the way to the end. A true rancher. |
+| commander | clone | 分身の術 | Shadow Clones | Need more hands? I can make more. | I have endless hands. | Always has several AIs running at once. Still just one person. |
+| commander | fullpower | 丸ごと委任 | Full Delegation | Approved. All of it. | Signatures? Not needed anymore. | One request, and the whole project starts moving. |
+| commander | onevoice | 一言委任 | Word of Command | …Handle it. | Mm. | Short instructions, wide scope. That's how deep the trust goes. |
+| appraiser | doubt | 疑いの眼 | Eye of Doubt | "Done," you say. Proof? | Nothing is done until I've seen it. | Meets every "all done" from the AI with healthy suspicion. |
+| appraiser | farsight | 目視の鬼 | Seeing Is Believing | Can you show me the screen? | I don't need to look. It's off. | "It works" isn't enough. The check ends when the screen is shown. |
+| appraiser | ironwall | テスト至上主義 | Tests Above All | I don't believe it until the tests pass. | Bugs run away on their own. | Change anything, run the tests. It's basically breathing. |
+| appraiser | keeneye | あら探し名人 | Bug Hunter | See? Right here. It's off. | I knew it was here before we fixed it. | Somehow spots the AI's small mistakes right away. |
+| appraiser | multicheck | 多重チェック | Layered Checks | There's more than one way to check. | There are a hundred more ways to check. | Has many ways to verify, and picks the right one for each situation. |
+| architect | foresight | 段取り八分 | Plan First | Let's start with the big picture. | I knew you'd ask that three days from now. | Never jumps straight to building. A plan comes first. |
+| architect | sage | 前提共有 | Shared Context | I already wrote that down. | I wrote that down six months ago. | Keeps the project's background written down, so the AI never gets lost. |
+| architect | lucid | 伝達完了 | Crystal Clear | The goal is here. That's all. | No more explanation needed. | Hardly anything gets left out. The AI never has to ask back. |
+| architect | inquiry | 調査から入る | Investigate First | Let's not decide the cause yet. | Let's find the cause of the cause. | Never jumps to conclusions. Lets the AI investigate first, then thinks. |
+| alchemist | sloth | 二度手間アレルギー | Allergic to Repeats | The system does the work. | Haven't written a single line today. | Ask for the same thing a few times, and it soon becomes a tool. |
+| alchemist | hundredtools | 道具箱 | Toolbox | There's a tool for that. | Is there any job without a tool? | Uses homemade tools almost every day. |
+| alchemist | perpetual | 自動錬成 | Auto Transmutation | I set it up to run on its own. | I forgot how to stop it. | Even when no one touches anything, the setup keeps working. |
+| alchemist | massproduce | 量産体制 | Mass Production | Oops, made another one. | Ten more appeared overnight. | Keeps creating new tools, and actually uses them. |
+| sniper | bullseye | 一撃必中 | One Shot, One Hit | Obviously. | I don't know how to miss. | Most things are done in one or two instructions. No room for the AI to ask. |
+| sniper | precision | 精密射撃 | Precision Shot | One millimeter to the right. | A tenth of a millimeter to the right. | Almost every request comes with a clear goal. The AI can't get lost. |
+| sniper | flash | 早撃ち | Quick Draw | Already done. Why? | It was done before you asked. | From request to done, simply fast. |
+| sniper | silence | 無言の圧 | Silent Pressure | …I only say it once. | …… | Short instructions that land anyway. The AI reads the room. |
+| partner | sparring | 無限壁打ち | Endless Sparring | Hey, can I run something by you? | I'm not done talking yet. | Once the talk starts, it keeps going. The longer the back-and-forth, the better the answer. |
+| partner | discerning | 比較検討 | Weighing Options | A or B, what do you think? | Neither A nor B. It's C. | Never settles on one idea. Lines up a few, then chooses. |
+| partner | reverse | 逆質問 | Questions First | Go ahead, ask me first. | By the time the questions end, the answer is there. | Before starting, lets the AI ask questions to sort out the thinking. |
+| partner | monologue | ひとり会議 | Thinking Out Loud | …Oh, saying it out loud helped. | I knew before I said it. | Explaining things to the AI often turns up the answer midway. |
+| explorer | curious | 好奇心 | Curiosity | Could AI handle this too? | Still haven't found anything AI can't do. | Hands all kinds of things to the AI, just to see. |
+| explorer | risingstar | 急成長 | Growth Spurt | Not the same as last month. | Already beating last week's self. | {axis} has jumped since last time. Growing fastest right now. |
+| explorer | tireless | 皆勤賞 | Perfect Attendance | Let's do this again today. | Can't find a reason to stop. | A day without teaming up with the AI is the rare one. |
+| explorer | pioneer | 初挑戦 | First Try | A way of using it no one has tried yet. | I only walk roads that aren't on the map. | Finds a new way to use AI and tries it right away. |
+| conductor | legion | 全軍指揮 | Command of Legions | Everyone, take your positions. | All units, move freely. We win anyway. | Runs many AIs at once, and hardly ever has to fix anything afterward. |
+| conductor | strategist | 適材適所 | Right Task, Right Hands | This part's yours. This part's mine. | I already see everyone's role. | Knows exactly what to delegate and what to keep. |
+| conductor | flawless | 死角なし | No Blind Spots | Nothing in particular to add. | There's no one to compare with. | All six strengths are high. No weak spot in sight. |
+
+### 軸
+
+| axis | 軸 | Axis |
+|---|---|---|
+| context | 文脈設計 | Context Design |
+| delegation | 委任力 | Delegation |
+| verification | 検証力 | Verification |
+| autonomy | 自律化設計 | Autonomy Design |
+| efficiency | 介入効率 | Intervention Efficiency |
+| systems | 仕組み化 | Systematization |
+
+### クセ
+
+| axis | ID | クセの名前 | Name | Evidence |
+|---|---|---|---|---|
+| context | afterthought | 後出しの「あ、あと」 | "Oh, and one more thing" | Tends to tack on "oh, and also…" after asking. |
+| context | oral | 前提の口伝 | Oral Tradition | Explains the same background out loud, every single time. |
+| delegation | micromanage | 細かすぎる指示 | Baby Steps | Gives instructions one step at a time. The AI could run much further. |
+| delegation | hoarder | 抱え込み | Can't Let Go | Ends up rewriting by hand what the AI wrote. |
+| verification | gullible | 信じやすい | Trusting Soul | Tends to take the AI's "done!" at face value. |
+| verification | lasteye | 最後は自分の目 | Final Inspection | In the end, still hunting for problems by eye. |
+| autonomy | hover | 放置できない | Can't Look Away | While the AI works, keeps peeking in to see how it's going. |
+| autonomy | stopper | 途中下車 | Emergency Brake | Once the AI gets going, the urge to stop it kicks in. |
+| efficiency | marathon | 長期戦 | The Long Game | A single task tends to turn into a long back-and-forth. |
+| efficiency | uturn | 方向転換 | Change of Course | The destination tends to shift mid-build. |
+| systems | handwritten | 毎回手書き | Handwritten Every Time | Writes similar requests by hand, every time. |
+| systems | sleeping | 眠れる道具 | Sleeping Tools | The tools that got built are asleep in a drawer. |

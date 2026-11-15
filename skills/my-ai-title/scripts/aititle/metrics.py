@@ -40,6 +40,14 @@ PLAN_CUE_RE = re.compile(
     r"|\b(plan|planning|approach|design doc|before (you )?(start|implement))\b",
     re.IGNORECASE,
 )
+# Cues that a follow-up prompt asks the AI to check its work.
+VERIFY_CUE_RE = re.compile(
+    r"確認して|確かめて|テストして|テストを(書|回|実行|追加)|見せて|スクショ|スクリーンショット|動作確認"
+    r"|検証して|レビューして|本当に|ちゃんと動|画面(を)?(見|確認)"
+    r"|\b(check|verify|test it|run the tests?|screenshot|show me|are you sure|double-?check|review it)\b",
+    re.IGNORECASE,
+)
+LONG_PROMPT_UNITS = 40             # size_units at or above = a long (background) explanation
 _EDIT_TOOLS = {"Edit", "Write", "MultiEdit", "NotebookEdit"}
 
 
@@ -206,6 +214,18 @@ def _share(n: int, d: int) -> Optional[float]:
     return round(n / d, 3) if d else None
 
 
+def _max_streak(flags: Sequence[bool]) -> int:
+    best = cur = 0
+    for f in flags:
+        cur = cur + 1 if f else 0
+        best = max(best, cur)
+    return best
+
+
+def own_names(created: Dict[str, datetime], on_disk: Set[str]) -> Set[str]:
+    return (set(created) | set(on_disk)) - V.BUNDLED_SKILLS
+
+
 def _tool_family(name: str) -> str:
     m = re.match(r"(mcp__[^_]+(?:_[^_]+)*?)__", name)
     return m.group(1) if m else name
@@ -220,7 +240,7 @@ def mechanism_activity(stats: Sequence[SessionStats], on_disk: Set[str]):
                 name = V.mechanism_name(ev.target)
                 if name and name not in created:
                     created[name] = ev.ts
-    own = (set(created) | set(on_disk)) - V.BUNDLED_SKILLS
+    own = own_names(created, on_disk)
     uses = []
     for st in stats:
         for ev in st.session.events:
@@ -250,6 +270,7 @@ def build_metrics(stats: Sequence[SessionStats], read: E.ReadResult,
         beh.update(t.behaviors)
 
     # verification
+    followups = [t for k in work_tasks for t in k.turns[1:] if t.kind == "prompt"]
     methods_used = [m for m in V.VERIFICATION_METHODS if beh[m] > 0]
     fix_turns = [t for t in turns if t.followup_fix]
 
@@ -323,6 +344,7 @@ def build_metrics(stats: Sequence[SessionStats], read: E.ReadResult,
             "prompts_per_task_median": _median([k.prompts for k in work_tasks]),
             "tasks_within_2_prompts_share": _share(sum(1 for k in work_tasks if k.prompts <= 2), len(work_tasks)),
             "tasks_within_2_prompts_no_rework": len(clean_short),
+            "max_clean_task_streak": _max_streak([k.fixes == 0 for k in work_tasks]),
             "turns_per_session_mean": _mean([len(st.turns) for st in stats]),
             "turns_per_session_median": _median([len(st.turns) for st in stats]),
             "prompt_size_median": _median(sizes),
@@ -352,6 +374,7 @@ def build_metrics(stats: Sequence[SessionStats], read: E.ReadResult,
             "followup_fix_prompts_est": len(fix_turns),
             "followup_fix_task_share_est": _share(sum(1 for k in work_tasks if k.fixes), len(work_tasks)),
             "image_prompts": sum(1 for t in prompt_turns if t.image),
+            "verify_request_share": _share(sum(1 for t in followups if VERIFY_CUE_RE.search(t.text)), len(followups)),
         },
         "parallel": {
             "subagent_calls": sum(t.agents for t in turns),
@@ -378,8 +401,11 @@ def build_metrics(stats: Sequence[SessionStats], read: E.ReadResult,
             "mechanisms_created": len(created),
             "mechanisms_created_used": len(used_after),
             "mechanisms_created_unused": len(set(created) - used_after),
+            "own_mechanisms_unused": len((own_names(created, on_disk_mechanisms)) - {u[1] for u in uses}),
             "repeated_prompt_patterns": len(clusters),
             "repeated_prompts": sum(len(c) - 1 for c in clusters),
+            "repeated_long_prompts": sum(1 for c in clusters for i in c[1:]
+                                         if size_units(prompts_text[i]) >= LONG_PROMPT_UNITS),
             "patterns_gone_after_mechanism": resolved,
         },
         "context": {
