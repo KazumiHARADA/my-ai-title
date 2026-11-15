@@ -10,6 +10,8 @@ excerpts*
 # Generated card images (character art under skills/*/assets/ is allowed)
 *.png
 !skills/my-ai-title/assets/**/*.png
+!docs/images/*.png
+!.claude-plugin/icon.png
 
 # Raw session logs: only synthetic fixtures under tests/fixtures/ are allowed
 *.jsonl

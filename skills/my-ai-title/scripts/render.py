@@ -92,7 +92,7 @@ def build_html(card: dict) -> str:
         "COLOR": card["color"],
         "TINT": tint(card["color"]),
         "NO": e(card["no"]),
-        "BADGE": '<span class="badge">RARE</span>' if card["rare"] else "",
+        "BADGE": "",  # rare cards are shown by the frame and glow only, no badge
         "CHAR": character_html(card["image"]),
         "EPITHET_STEM": e(stem),
         "NAME": e(t["role"]),

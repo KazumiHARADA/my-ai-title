@@ -388,7 +388,7 @@ def scenario_partner() -> None:
         logs.append(lg)
     _write_scenario("partner", logs,
                     {"context": 3, "delegation": 3, "verification": 3, "autonomy": 3, "efficiency": 3, "systems": 3},
-                    {"type": "partner", "ability_id": "sparring", "rare": False, "quirk_id": "marathon"},
+                    {"type": "partner", "ability_id": "thousandnights", "rare": False, "quirk_id": "marathon"},
                     judgments={"partner_adopted": "yes"})
 
 

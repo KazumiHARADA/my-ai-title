@@ -247,11 +247,6 @@ def draw(card: dict, fonts: Fonts):
     d = ImageDraw.Draw(img)
     no_color = GOLD_LIGHT if rare else mix(color, BLACK, 0.70)
     d.text((84, 80), card["no"], font=fonts.get(19), fill=no_color + (190,))
-    if rare:
-        bf = fonts.get(18)
-        bw = bf.getlength("RARE") + 32
-        d.rounded_rectangle((474 - bw, 80, 474, 112), radius=16, fill=(244, 222, 140, 255))
-        d.text((474 - bw / 2, 96), "RARE", font=bf, fill=(90, 66, 10, 255), anchor="mm")
 
     # title block (vertically centred next to the radar)
     size, _w = fit_title(card, fonts)

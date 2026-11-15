@@ -50,7 +50,7 @@ class TestHtml(unittest.TestCase):
     def test_rare_and_svg_fallback(self):
         doc = render.build_html(card_for("sage", True, "ja"))   # architect: no PNG yet
         self.assertIn('class="rare"', doc)
-        self.assertIn('class="badge"', doc)
+        self.assertNotIn('class="badge"', doc)   # no badge: the frame shows it is rare
         self.assertIn("<svg", doc.split('class="art"')[1][:2000])
 
     def test_text_is_escaped(self):

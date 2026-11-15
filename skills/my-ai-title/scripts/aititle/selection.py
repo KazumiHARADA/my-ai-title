@@ -140,9 +140,9 @@ ABILITY_RULES = {
     "flash": at_most("intervention.task_minutes_median", 10),
     "silence": at_least("intervention.short_prompt_share", 0.70),
     # partner
-    "sparring": at_least("intervention.turns_per_session_median", 20),
-    "discerning": judged("discerning"),
-    "reverse": judged("reverse"),
+    "thousandnights": at_least("intervention.turns_per_session_median", 20),
+    "aesthetic": judged("aesthetic"),
+    "question": judged("question"),
     "monologue": judged("monologue"),
     # explorer
     "curious": at_least("breadth.distinct_tools", 12),
@@ -177,8 +177,8 @@ JUDGMENTS = {
     "lucid": "Tasks keep finishing without rework caused by missing information (architect).",
     "inquiry": "Many tasks hand over the symptom and let the AI investigate instead of assuming a cause (architect).",
     "precision": "Requests usually state completion criteria (sniper).",
-    "discerning": "Many sessions compare several options before deciding (partner).",
-    "reverse": "Many tasks start by letting the AI ask questions first (partner).",
+    "aesthetic": "Many sessions compare several options before deciding (partner).",
+    "question": "Many tasks start by letting the AI ask questions first (partner).",
     "monologue": "The human often finds the answer while explaining to the AI (partner).",
     "strategist": "Delegation style changes with the nature of the task (conductor).",
     "afterthought": "Rework caused by details added after the request (context quirk).",

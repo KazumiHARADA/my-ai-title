@@ -242,9 +242,9 @@
 | sniper | precision | 精密射撃 | Precision Shot | One millimeter to the right. | A tenth of a millimeter to the right. | Almost every request comes with a clear goal. The AI can't get lost. |
 | sniper | flash | 早撃ち | Quick Draw | Already done. Why? | It was done before you asked. | From request to done, simply fast. |
 | sniper | silence | 無言の圧 | Silent Pressure | …I only say it once. | …… | Short instructions that land anyway. The AI reads the room. |
-| partner | sparring | 無限壁打ち | Endless Sparring | Hey, can I run something by you? | I'm not done talking yet. | Once the talk starts, it keeps going. The longer the back-and-forth, the better the answer. |
-| partner | discerning | 比較検討 | Weighing Options | A or B, what do you think? | Neither A nor B. It's C. | Never settles on one idea. Lines up a few, then chooses. |
-| partner | reverse | 逆質問 | Questions First | Go ahead, ask me first. | By the time the questions end, the answer is there. | Before starting, lets the AI ask questions to sort out the thinking. |
+| partner | thousandnights | 無限壁打ち | Endless Sparring | Hey, can I run something by you? | I'm not done talking yet. | Once the talk starts, it keeps going. The longer the back-and-forth, the better the answer. |
+| partner | aesthetic | 比較検討 | Weighing Options | A or B, what do you think? | Neither A nor B. It's C. | Never settles on one idea. Lines up a few, then chooses. |
+| partner | question | 逆質問 | Questions First | Go ahead, ask me first. | By the time the questions end, the answer is there. | Before starting, lets the AI ask questions to sort out the thinking. |
 | partner | monologue | ひとり会議 | Thinking Out Loud | …Oh, saying it out loud helped. | I knew before I said it. | Explaining things to the AI often turns up the answer midway. |
 | explorer | curious | 好奇心 | Curiosity | Could AI handle this too? | Still haven't found anything AI can't do. | Hands all kinds of things to the AI, just to see. |
 | explorer | risingstar | 急成長 | Growth Spurt | Not the same as last month. | Already beating last week's self. | {axis} has jumped since last time. Growing fastest right now. |
