@@ -41,14 +41,15 @@ claude plugin install my-ai-title@kharada
 
 ## Usage
 
-Just ask Claude Code:
+Open Claude Code in the project you want to diagnose and ask. Only **that project's sessions** are used (the git root and below, worktrees included).
 
 ```
 Make my AI title card in English
 ```
 
 - Another period: "Make my AI title card from the last 60 days"
-- One project only: "Make my AI title card for ~/Projects/foo only"
+- Every project: "Make my AI title card from all my projects"
+- Another project: "Make my AI title card for ~/Projects/foo"
 - Japanese card too: "Also make the Japanese card"
 
 Without a language, the card uses the language that appears most in your logs (Japanese or English; other languages get the English card).
@@ -59,7 +60,7 @@ The card is saved in the current directory as `my-ai-title-card-en.png` (Japanes
 
 - **Local scripts read the logs.** They read the session logs in `~/.claude/projects` and compute counts and ratios on your machine. The scripts never access the network.
 - **Excerpts of your logs are sent to Claude (Anthropic's API) for scoring.** A few characteristic sessions are picked, redacted, and read by Claude through the same path as your normal Claude Code session (your instructions and the AI's final reports, for example). Logs, numbers, scores and images are never sent to any other service or to any server of ours.
-- **Redaction:** strings that look like API keys, tokens or passwords, e-mail addresses, URLs, file paths, host names, and likely company, person and place names are masked; code blocks and pasted logs are omitted. This is automatic and cannot catch every proper noun (for example place names written only in kanji). If that matters to you, limit the diagnosis to one project.
+- **Redaction:** strings that look like API keys, tokens or passwords, e-mail addresses, URLs, file paths, host names, and likely company, person and place names are masked; code blocks and pasted logs are omitted. This is automatic and cannot catch every proper noun (for example place names written only in kanji). By default only the current project's sessions are read, so other projects' content is never sent.
 - **Never on the card:** specific numbers (counts, ratios, durations, times of day), anything that reveals working hours or time away, and work details such as code, company, file or project names.
 - **What stays on your machine:** the card image, and your previous six scores for growth detection (`~/.claude/my-ai-title/history.json`, scores and dates only). Intermediate files go to a temporary directory.
 

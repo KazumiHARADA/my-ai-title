@@ -3,7 +3,10 @@
 
 Usage:
     python3 extract.py [--days 30 | --since YYYY-MM-DD [--until YYYY-MM-DD]]
-                       [--project DIR] [--logs-dir DIR] [--out metrics.json]
+                       [--project DIR | --all-projects] [--logs-dir DIR] [--out metrics.json]
+
+By default only sessions of the current project (the git root of the working
+directory, worktrees included) are read.
 
 Reads local files only. No network access. Output holds no text, names or paths.
 """
@@ -18,6 +21,7 @@ from typing import Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from aititle import scope  # noqa: E402
 from aititle.metrics import analyze, build_metrics  # noqa: E402
 from aititle.sources import claude_code  # noqa: E402
 
@@ -54,15 +58,14 @@ def main(argv=None) -> int:
     ap.add_argument("--until", type=_date)
     ap.add_argument("--logs-dir", type=Path, default=None,
                     help="default: $CLAUDE_CONFIG_DIR/projects or ~/.claude/projects")
-    ap.add_argument("--project", default=None,
-                    help="only sessions started in this directory (or below it)")
+    scope.add_arguments(ap)
     ap.add_argument("--out", type=Path, default=Path("metrics.json"))
     args = ap.parse_args(argv)
     since, until = window(args)
-    metrics = run(args.logs_dir, since, until, args.project)
+    metrics = run(args.logs_dir, since, until, scope.resolve(args))
     args.out.write_text(json.dumps(metrics, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     d = metrics["data"]
-    print(f"sessions={d['sessions']} tasks={d['tasks']} prompts={d['human_prompts']} "
+    print(f"scope={metrics['scope']} sessions={d['sessions']} tasks={d['tasks']} prompts={d['human_prompts']} "
           f"language={metrics['language']['dominant']} -> {args.out}", file=sys.stderr)
     return 0
 

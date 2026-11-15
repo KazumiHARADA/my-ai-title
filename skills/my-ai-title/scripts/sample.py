@@ -2,7 +2,9 @@
 """Pick characteristic sessions and write redacted excerpts for scoring.
 
 Usage:
-    python3 sample.py --metrics metrics.json [--project DIR] [--logs-dir DIR] [--out samples.json]
+    python3 sample.py --metrics metrics.json [--project DIR | --all-projects] [--logs-dir DIR] [--out samples.json]
+
+Use the same scope options as extract.py (default: the current project).
 
 Only redacted text leaves this script: human instructions, the AI's final
 report of each turn, and per-turn action counts. Code blocks, secrets,
@@ -22,6 +24,7 @@ from typing import Dict, List, Optional, Sequence, Set
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from aititle import evidence as V  # noqa: E402
+from aititle import scope  # noqa: E402
 from aititle.metrics import SessionStats, Turn, analyze  # noqa: E402
 from aititle.redact import redact  # noqa: E402
 from aititle.sources import claude_code  # noqa: E402
@@ -156,14 +159,14 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--metrics", type=Path, required=True, help="metrics.json from extract.py (for the period)")
     ap.add_argument("--logs-dir", type=Path, default=None)
-    ap.add_argument("--project", default=None, help="same --project as given to extract.py")
+    scope.add_arguments(ap)
     ap.add_argument("--out", type=Path, default=Path("samples.json"))
     ap.add_argument("--max-sessions", type=int, default=MAX_SESSIONS)
     args = ap.parse_args(argv)
     period = json.loads(args.metrics.read_text(encoding="utf-8"))["period"]
     since = claude_code.parse_ts(period["since"])
     until = claude_code.parse_ts(period["until"])
-    read = claude_code.read_sessions(args.logs_dir, since, until, project=args.project)
+    read = claude_code.read_sessions(args.logs_dir, since, until, project=scope.resolve(args))
     data = build(analyze(read.sessions), args.max_sessions)
     args.out.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"sessions sampled={len(data['sessions'])} -> {args.out}", file=sys.stderr)

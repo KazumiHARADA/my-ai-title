@@ -8,7 +8,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from helpers import PROJECTS, SCRIPTS  # noqa: F401  (sets sys.path)
+from helpers import PROJECTS, ROOT, SCRIPTS  # noqa: F401  (sets sys.path)
 
 import extract
 from aititle import events as E
@@ -96,6 +96,29 @@ class TestReader(unittest.TestCase):
         self.assertEqual(m["scope"], "project")
         self.assertNotIn("acme", json.dumps(m))
 
+    def test_default_scope_is_current_project(self):
+        import argparse
+        from aititle import scope
+        ap = argparse.ArgumentParser()
+        scope.add_arguments(ap)
+        here = scope.project_root()
+        self.assertEqual(scope.resolve(ap.parse_args([])), here)
+        self.assertIsNone(scope.resolve(ap.parse_args(["--all-projects"])))
+        self.assertEqual(scope.resolve(ap.parse_args(["--project", "/tmp/x"])), "/tmp/x")
+        with self.assertRaises(SystemExit):
+            ap.parse_args(["--project", "/tmp/x", "--all-projects"])
+
+    def test_project_root(self):
+        from aititle import scope
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            self.assertEqual(scope.project_root(str(tmp)), str(tmp))   # not a git repo: cwd itself
+            sub = ROOT / "skills" / "my-ai-title"
+            self.assertEqual(os.path.realpath(scope.project_root(str(sub))), os.path.realpath(str(ROOT)))
+            self.assertEqual(scope._WORKTREE_RE.sub("", "/p/app/.claude/worktrees/feat-x"), "/p/app")
+        finally:
+            shutil.rmtree(tmp)
+
     def test_parse_ts_variants(self):
         for s in ("2026-10-01T00:00:00Z", "2026-10-01T00:00:00.1Z", "2026-10-01T00:00:00.123456789Z",
                   "2026-10-01T09:00:00+09:00", "2026-10-01T00:00:00"):
@@ -172,7 +195,7 @@ class TestMetrics(unittest.TestCase):
         try:
             out = tmp / "metrics.json"
             rc = extract.main(["--logs-dir", str(PROJECTS), "--since", "2026-09-25", "--until", "2026-10-10",
-                               "--out", str(out)])
+                               "--all-projects", "--out", str(out)])
             self.assertEqual(rc, 0)
             self.assertEqual(json.loads(out.read_text())["data"]["sessions"], 3)
         finally:

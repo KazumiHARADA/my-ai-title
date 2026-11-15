@@ -139,9 +139,9 @@ class TestSample(unittest.TestCase):
         tmp = Path(tempfile.mkdtemp())
         try:
             extract.main(["--logs-dir", str(PROJECTS), "--since", "2026-09-25", "--until", "2026-10-10",
-                          "--out", str(tmp / "m.json")])
+                          "--all-projects", "--out", str(tmp / "m.json")])
             rc = sample.main(["--metrics", str(tmp / "m.json"), "--logs-dir", str(PROJECTS),
-                              "--out", str(tmp / "s.json")])
+                              "--all-projects", "--out", str(tmp / "s.json")])
             self.assertEqual(rc, 0)
             text = (tmp / "s.json").read_text(encoding="utf-8")
             for bad in MUST_NOT_APPEAR:

@@ -17,12 +17,12 @@ Produce one 1200×675 PNG card that describes how the user works with AI. Number
 
 ## Steps
 
-All intermediate files go in a temporary work directory (`$WORK`, e.g. created with `mktemp -d`). Do not write them into the user's project.
+All intermediate files go in a temporary work directory (`$WORK`, e.g. created with `mktemp -d`). Do not write them into the user's project. Run every script from the user's working directory (do not `cd` into `$WORK`): the default scope is decided by the working directory.
 
-1. **Period and scope** — Default is the last 30 days of all projects. Use the user's period if they give one. If they want only one project, add `--project <dir>` to both `extract.py` and `sample.py` (sessions started in that directory or below it, including its worktrees).
+1. **Period and scope** — Default is the last 30 days of the **current project**: the scripts use the git root of the working directory (worktrees included) unless told otherwise. Use the user's period if they give one. If the user asks for all projects, add `--all-projects`; for another project, add `--project <dir>`. Pass the same scope option to both `extract.py` and `sample.py`.
 2. **Extract** — Run
    `python3 ${CLAUDE_SKILL_DIR}/scripts/extract.py --days 30 --out $WORK/metrics.json`
-3. **Check data volume** — If `metrics.json` shows fewer than 5 sessions, tell the user and ask whether to stop or continue with lower accuracy.
+3. **Check data volume** — If `metrics.json` shows fewer than 5 sessions, tell the user and ask whether to stop, continue with lower accuracy, or (when `scope` is `project`) widen to all projects with `--all-projects`.
 4. **Sample** — Run
    `python3 ${CLAUDE_SKILL_DIR}/scripts/sample.py --metrics $WORK/metrics.json --out $WORK/samples.json`
    and read `$WORK/samples.json` (already redacted).
