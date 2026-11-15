@@ -1,0 +1,15 @@
+{
+  "name": "kharada",
+  "owner": {
+    "name": "KazumiHARADA",
+    "url": "https://github.com/KazumiHARADA"
+  },
+  "description": "Plugins by KazumiHARADA.",
+  "plugins": [
+    {
+      "name": "my-ai-title",
+      "source": "./",
+      "description": "Diagnose how you work with AI from your local Claude Code logs and get a shareable title card (AI肩書き診断)."
+    }
+  ]
+}
