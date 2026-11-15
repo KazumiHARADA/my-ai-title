@@ -4,7 +4,7 @@
 
 - **Score behavior, not features.** Never award or deduct points for using (or not using) a specific tool, command, or feature. Feature usage found in the logs is only *evidence* of a behavior. Different routes to the same behavior earn the same score (e.g. parallel work via manual worktrees, subagents, or orchestrated workflows are equivalent).
 - **Score judgment, not volume.** Higher counts are not better by themselves. What matters is whether the user adapts their approach to the situation.
-- Each axis is scored 1–5. Levels 1, 3 and 5 are anchors; interpolate 2 and 4.
+- Each axis is scored 1–5. Levels 1, 3 and 5 are anchors. Decide by matching the evidence to the anchor descriptions: if the evidence matches level 5, give 5. Give 4 only when you can name which part of the level-5 description is not met, and state it in the evidence note. Likewise, give 2 only when you can name which part of the level-3 description is not met. Do not lower a score out of general caution.
 - Numeric signals from `extract.py` are reference material. Decide the final score together with the session excerpts.
 - For each axis, record 1–2 sentences describing the evidence behind the score. Never include code, company names, file paths, or other identifying details.
 

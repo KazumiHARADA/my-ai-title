@@ -119,6 +119,36 @@ class TestReader(unittest.TestCase):
         finally:
             shutil.rmtree(tmp)
 
+    def test_diagnosis_runs_are_left_out(self):
+        import sys as _sys
+        _sys.path.insert(0, str(ROOT / "tests" / "fixtures"))
+        from make_fixtures import Log
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            cwd = "/Users/demo/Projects/app"
+            work = Log("aaaaaaaa-0000-4000-8000-000000000001", cwd, SINCE + timedelta(days=1))
+            work.prompt("fix the header spacing")
+            work.tool("Edit", file_path=cwd + "/a.css", old_string="a", new_string="b")
+            work.say("done")
+            work.prompt("AI肩書き診断して")
+            work.tool("Skill", skill="my-ai-title:my-ai-title")
+            work.tool("Bash", command="python3 /x/plugins/cache/kharada/my-ai-title/0.4.0/skills/my-ai-title/scripts/extract.py --out m.json")
+            work.say("card saved")
+            only = Log("aaaaaaaa-0000-4000-8000-000000000002", cwd, SINCE + timedelta(days=2))
+            only.command("my-ai-title:my-ai-title")
+            only.tool("Bash", command="python3 /p/skills/my-ai-title/scripts/sample.py --metrics m.json")
+            only.say("card saved")
+            d = tmp / "projects" / "-Users-demo-Projects-app"
+            work.write(d / (work.sid + ".jsonl"))
+            only.write(d / (only.sid + ".jsonl"))
+            res = claude_code.read_sessions(tmp / "projects", SINCE, UNTIL)
+            self.assertEqual([s.id[-1] for s in res.sessions], ["1"])          # diagnosis-only session dropped
+            prompts = [e.text for e in res.sessions[0].events if e.kind == E.PROMPT]
+            self.assertEqual(prompts, ["fix the header spacing"])             # work before the request kept
+            self.assertFalse(any(e.tool == "Skill" for e in res.sessions[0].events))
+        finally:
+            shutil.rmtree(tmp)
+
     def test_parse_ts_variants(self):
         for s in ("2026-10-01T00:00:00Z", "2026-10-01T00:00:00.1Z", "2026-10-01T00:00:00.123456789Z",
                   "2026-10-01T09:00:00+09:00", "2026-10-01T00:00:00"):

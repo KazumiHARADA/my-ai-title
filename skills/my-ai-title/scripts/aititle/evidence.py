@@ -118,6 +118,18 @@ MECHANISM_FILE_RE = re.compile(
 SETTINGS_FILE_RE = re.compile(r"[/\\]\.claude[/\\]settings(\.local)?\.json$")
 
 
+# This skill's own runs: the part of a session from the request that started a
+# diagnosis onward is left out, so diagnosing does not change the next result.
+SELF_SKILL_RE = re.compile(r"(^|:)my-ai-title$")
+SELF_SCRIPT_RE = re.compile(r"skills[/\\]my-ai-title[/\\]scripts[/\\](extract|sample|choose|render)\.py")
+
+
+def is_self_run(tool: str, target: str) -> bool:
+    if tool in ("Skill", "command") and SELF_SKILL_RE.search(target or ""):
+        return True
+    return tool in ("Bash", "PowerShell") and bool(SELF_SCRIPT_RE.search(target or ""))
+
+
 def tool_behaviors(tool: str, target: str = "") -> Set[str]:
     """Behaviors evidenced by one tool call."""
     out = set(TOOL_BEHAVIOR.get(tool, ()))

@@ -137,6 +137,11 @@ _KATA_COMMON = set("""
 """.split())
 
 
+# Short English function words. Capitalized in the middle of a sentence, they are
+# almost always a name that happens to be spelled like one (e.g. a person "Or").
+_FUNCTION_WORDS = set("a an and as at be by do for go he if in is it me my no of on or so the to up us we".split())
+
+
 def _kata_ok(word: str) -> bool:
     w = word.replace("・", "")
     ok = [True] + [False] * len(w)
@@ -176,6 +181,9 @@ def _tokenwise(text: str, cjk_context: bool, terms_lower: set) -> str:
             out.append(ID)
         elif re.search(r"[a-z][A-Z]", word) or (len(word) > 1 and word.isupper() and low not in _COMMON):
             out.append(ID if re.search(r"[a-z][A-Z]", word) else NAME)
+        elif word[0].isupper() and word[1:].islower() and low in _FUNCTION_WORDS \
+                and not _sentence_start(text, start):
+            out.append(NAME)
         elif word[0].isupper() and low not in _COMMON and word != "I" \
                 and not (_sentence_start(text, start) and re.fullmatch(r"[A-Z][a-z]+(ed|ing|ly)", word)):
             out.append(NAME)

@@ -59,6 +59,10 @@ class TestRedact(unittest.TestCase):
         self.check("work on secret-repo for taro", ["secret-repo", "taro"], terms={"secret-repo", "taro"})
         self.check("株式会社ほげの件", ["ほげ"], terms={"株式会社ほげ"})
         self.check("order 1234567 shipped", ["1234567"], ["[NUM]"])
+        # a name spelled like a function word, in English or inside Japanese text
+        self.check("why not ask it to Or?", ["to Or"], ["ask it to [NAME]"])
+        self.check("ask it to Orはなんで言わないの？", ["Or"], ["[NAME]はなんで"])
+        self.check("Fix the bug. Or leave it.", [], ["Or leave it"])
         # everyday words collected from branch names are not masked
         self.check("run the test again", [], ["run the test again"], terms={"test", "acme"})
 
@@ -132,8 +136,24 @@ class TestSample(unittest.TestCase):
         idx = sample.pick_turns(turns)
         self.assertEqual(len(idx), sample.MAX_TURNS)
         self.assertIn(20, idx)
-        self.assertEqual(idx[:3], [0, 1, 2])
-        self.assertEqual(idx[-3:], [37, 38, 39])
+        self.assertEqual(idx[:2], [0, 1])
+        self.assertEqual(idx[-2:], [38, 39])
+
+    def test_pick_sessions_spreads_over_the_period(self):
+        from datetime import timedelta
+        from aititle.metrics import SessionStats, Turn
+        from aititle.events import Session
+        t0 = datetime(2026, 10, 1, tzinfo=timezone.utc)
+        stats = []
+        for i in range(30):
+            turns = [Turn(start=t0 + timedelta(days=i), end=t0 + timedelta(days=i), text="x") for _ in range(3 + i % 4)]
+            stats.append(SessionStats(session=Session(id=f"s{i:02d}", project="p"), turns=turns, tasks=[]))
+        picked = sample.pick_sessions(stats)
+        self.assertEqual(len(picked), sample.MAX_SESSIONS)
+        days = sorted(st.turns[0].start.day for _, st in picked)
+        self.assertLessEqual(days[0], 5)      # early in the period
+        self.assertGreaterEqual(days[-1], 26)  # and late in the period
+        self.assertEqual(len({st.session.id for _, st in picked}), len(picked))
 
     def test_cli(self):
         tmp = Path(tempfile.mkdtemp())

@@ -29,8 +29,8 @@ from aititle.metrics import SessionStats, Turn, analyze  # noqa: E402
 from aititle.redact import redact  # noqa: E402
 from aititle.sources import claude_code  # noqa: E402
 
-MAX_SESSIONS = 5
-MAX_TURNS = 12
+MAX_SESSIONS = 10
+MAX_TURNS = 7
 HUMAN_LIMIT = 500
 AI_LIMIT = 300
 
@@ -75,12 +75,13 @@ def pick_sessions(stats: Sequence[SessionStats], limit: int = MAX_SESSIONS) -> L
                 chosen.append((label, s))
                 used.add(s.session.id)
                 break
-    for s in sorted(candidates, key=lambda s: (-len(s.turns), s.session.id)):
-        if len(chosen) >= limit:
-            break
-        if s.session.id not in used:
-            chosen.append(("typical", s))
-            used.add(s.session.id)
+    # Fill the rest with sessions spread evenly over the period (not just the longest).
+    rest = sorted((s for s in candidates if s.session.id not in used), key=lambda s: (s.turns[0].start, s.session.id))
+    slots = limit - len(chosen)
+    if rest and slots > 0:
+        step = len(rest) / slots
+        picked = sorted({min(len(rest) - 1, int(i * step + step / 2)) for i in range(slots)})
+        chosen += [("typical", rest[i]) for i in picked]
     return chosen
 
 
@@ -88,14 +89,15 @@ def pick_turns(turns: Sequence[Turn], limit: int = MAX_TURNS) -> List[int]:
     n = len(turns)
     if n <= limit:
         return list(range(n))
-    keep = set(range(3)) | set(range(n - 3, n))
+    edge = max(1, (limit - 1) // 3)          # turns kept from the start and from the end
+    keep = set(range(edge)) | set(range(n - edge, n))
     for i, t in enumerate(turns):
         if len(keep) >= limit:
             break
         if t.followup_fix or t.interrupted or t.queued:
             keep.add(i)
     step = max(1, n // limit)
-    i = 3
+    i = edge
     while len(keep) < limit and i < n:
         keep.add(i)
         i += step

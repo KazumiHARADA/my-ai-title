@@ -176,6 +176,11 @@ def main(argv=None) -> int:
     hist_path = args.history or default_history()
     history = load_history(hist_path)
     now = datetime.now(timezone.utc)
+    gaps = scores_doc.get("gaps") or {}
+    for axis, value in (scores_doc.get("scores") or {}).items():
+        if value in (2, 4) and not str(gaps.get(axis, "")).strip():
+            print(f"warning: {axis} is {value} but scores.json has no gaps.{axis} "
+                  f"(name the unmet part of the level-{value + 1} description, or use {value + 1})", file=sys.stderr)
     card = run(scores_doc, metrics, args.lang, previous_scores(history, now))
     if args.save_history:
         save_history(hist_path, history, card["scores"], now)

@@ -307,6 +307,24 @@ class TestHistory(unittest.TestCase):
         finally:
             shutil.rmtree(tmp)
 
+    def test_cli_warns_on_four_without_gap(self):
+        import contextlib
+        import io
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            (tmp / "metrics.json").write_text(json.dumps(metrics()))
+            for doc, warned in (({"scores": S(e=4)}, True),
+                                ({"scores": S(e=4), "gaps": {"efficiency": "results are still reworked"}}, False),
+                                ({"scores": S(e=5)}, False)):
+                (tmp / "scores.json").write_text(json.dumps(doc))
+                err = io.StringIO()
+                with contextlib.redirect_stderr(err):
+                    choose.main(["--scores", str(tmp / "scores.json"), "--metrics", str(tmp / "metrics.json"),
+                                 "--out", str(tmp / "card.json"), "--history", str(tmp / "h.json")])
+                self.assertEqual("efficiency is 4" in err.getvalue(), warned, doc)
+        finally:
+            shutil.rmtree(tmp)
+
     def test_cli(self):
         tmp = Path(tempfile.mkdtemp())
         try:

@@ -331,6 +331,23 @@ def _scan_tool_names(path: Path) -> Set[str]:
     return out
 
 
+def _drop_self_runs(session: E.Session) -> None:
+    """Cut the session at the human request that started a diagnosis (this skill)."""
+    from ..evidence import is_self_run
+    events = session.events
+    for i, ev in enumerate(events):
+        hit = ((ev.kind == E.TOOL_CALL and is_self_run(ev.tool, ev.target))
+               or (ev.kind == E.COMMAND and is_self_run("command", ev.tool)))
+        if hit:
+            start = i
+            for j in range(i, -1, -1):
+                if events[j].agent is None and events[j].kind in (E.PROMPT, E.COMMAND):
+                    start = j
+                    break
+            del events[start:]
+            return
+
+
 def _session_files(root: Path) -> Iterable[Tuple[Path, List[Path]]]:
     if not root.is_dir():
         return
@@ -384,6 +401,7 @@ def read_sessions(root: Optional[Path] = None, since: Optional[datetime] = None,
             _read_file(sub, b, sub.stem, since, until, counters, before, history_since)
         if project and not under(b.first_cwd, project):
             continue
+        _drop_self_runs(b.session)
         b.session.subagent_logs = len(subs)
         b.session.events.sort(key=lambda e: e.ts)
         if b.session.events:

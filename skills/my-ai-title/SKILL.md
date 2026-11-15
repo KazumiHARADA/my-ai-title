@@ -26,13 +26,14 @@ All intermediate files go in a temporary work directory (`$WORK`, e.g. created w
 4. **Sample** — Run
    `python3 ${CLAUDE_SKILL_DIR}/scripts/sample.py --metrics $WORK/metrics.json --out $WORK/samples.json`
    and read `$WORK/samples.json` (already redacted).
-5. **Score** — Following [references/rubric.md](references/rubric.md), score the six axes 1–5 from the samples and metrics (apply the rubric's cap rule). Then decide each judgment listed by
+5. **Score** — Following [references/rubric.md](references/rubric.md), score the six axes 1–5 from the samples and metrics (apply the rubric's cap rule). Match the evidence to the level 1/3/5 descriptions: when it matches level 5, give 5. A 4 (or a 2) needs a named gap — the specific part of the level-5 (or level-3) description that is not met — written in `gaps`. Never lower a score just to be cautious. Then decide each judgment listed by
    `python3 ${CLAUDE_SKILL_DIR}/scripts/choose.py --list-judgments`
    as `"no"`, `"yes"` or `"strong"` (when unsure, `"no"`). Write `$WORK/scores.json`:
    ```json
    {"scores": {"context": 3, "delegation": 4, "verification": 4, "autonomy": 3, "efficiency": 3, "systems": 2},
     "judgments": {"precision": "yes", "keeneye": "no"},
-    "evidence": {"context": "one or two sentences per axis, no identifying details"}}
+    "evidence": {"context": "one or two sentences per axis, no identifying details"},
+    "gaps": {"delegation": "which part of the level-5 description is not met (for every 4 or 2)"}}
    ```
 6. **Choose** — Run
    `python3 ${CLAUDE_SKILL_DIR}/scripts/choose.py --scores $WORK/scores.json --metrics $WORK/metrics.json --lang <ja|en> --out $WORK/card.json --save-history`
