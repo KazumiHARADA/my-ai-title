@@ -6,8 +6,6 @@ allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*)
 
 # My AI Title (AI肩書き診断)
 
-> DRAFT — the scripts referenced below are not implemented yet.
-
 Produce one 1200×675 PNG card that describes how the user works with AI. Numbers come from scripts; judgment (the six scores and the conditions marked （判定） in `types.md`) comes from you. Card wording always comes from the fixed text in `types.md` — never write card text from scratch.
 
 ## Privacy rules (always)
@@ -41,7 +39,7 @@ All intermediate files go in a temporary work directory (`$WORK`, e.g. created w
    This picks the type, ability, quirk and rare status with the rules in [references/types.md](references/types.md) and fills in its fixed wording. `--save-history` keeps only the six scores (in `~/.claude/my-ai-title/history.json`) so the next run can detect growth. For a second language, run it again with the other `--lang`.
 7. **Render** — Run
    `python3 ${CLAUDE_SKILL_DIR}/scripts/render.py --card $WORK/card.json --out ./my-ai-title-card.png`
-   (English: `./my-ai-title-card-en.png`). If the file already exists, ask before overwriting.
+   (English: `--out ./my-ai-title-card-en.png`). If it exits with code 3, the file already exists: ask the user, and only if they agree, rerun with `--force`. It uses a local Chromium-based browser if one is installed, otherwise draws a simpler card with Pillow; tell the user if the message says a fallback was used.
 8. **Show** — Show the image and tell the user where it was saved. Offer the other language.
 
 ## Output language

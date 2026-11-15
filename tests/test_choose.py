@@ -229,7 +229,7 @@ class TestCard(unittest.TestCase):
         self.assertEqual(card["title"]["epithet"], "Silent")
         self.assertEqual(card["title"]["role"], "Sniper")
         self.assertEqual(card["ability"]["name"], "Silent Pressure")
-        self.assertEqual(card["period"], "From the last 30 days of Claude Code logs")
+        self.assertEqual(card["period"], "Last 30 days of Claude Code logs")
         self.assertEqual(card["hashtag"], "#MyAITitle")
         self.assertNotRegex(json.dumps(card, ensure_ascii=False), r"[぀-ヿ一-鿿]")
 

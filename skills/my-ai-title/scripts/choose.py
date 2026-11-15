@@ -95,7 +95,7 @@ def pick_image(db: typesdb.TypesDB, sel: Selection, char_dir: Path = CHAR_DIR) -
 def period_text(days: int, lang: str) -> str:
     if lang == "ja":
         return f"直近{days}日のClaude Codeログより"
-    return f"From the last {days} days of Claude Code logs"
+    return f"Last {days} days of Claude Code logs"
 
 
 def build_card(db: typesdb.TypesDB, sel: Selection, scores: Dict[str, int], days: int, lang: str,
@@ -125,10 +125,22 @@ def build_card(db: typesdb.TypesDB, sel: Selection, scores: Dict[str, int], days
         "ability": {"name": a.name[lang], "why": why},
         "quirk": quirk,
         "scores": scores,
+        "days": days,
+        "growth_axis": sel.growth_axis,
         "period": period_text(days, lang),
         "hashtag": HASHTAG[lang],
         "image": pick_image(db, sel, char_dir),
     }
+
+
+def localize(card: dict, lang: str, db: Optional[typesdb.TypesDB] = None,
+             char_dir: Path = CHAR_DIR) -> dict:
+    """Rebuild a card's wording in another language from its ids."""
+    db = db or typesdb.load()
+    quirk = None if card["quirk"]["id"] == "surplus" else next(q for q in db.quirks if q.id == card["quirk"]["id"])
+    sel = Selection(type=card["type"], ability=db.ability(card["ability_id"]), ability_ratio=0.0,
+                    quirk=quirk, rare=bool(card["rare"]), growth_axis=card.get("growth_axis"))
+    return build_card(db, sel, card["scores"], int(card.get("days") or 30), lang, char_dir)
 
 
 def run(scores_doc: dict, metrics: dict, lang: str, prev: Optional[Dict[str, int]],
