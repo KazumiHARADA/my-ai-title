@@ -126,8 +126,8 @@ ABILITY_RULES = {
     "multicheck": at_least("verification.methods_used", 3),
     # architect
     "foresight": at_least("context.plan_task_share", 0.20),
-    "sage": at_least("context.memo_updates", 4, per_month=True),
-    "lucid": judged("lucid"),
+    "wisdom": at_least("context.memo_updates", 4, per_month=True),
+    "clarity": judged("clarity"),
     "inquiry": judged("inquiry"),
     # alchemist
     "sloth": at_least("systems.patterns_gone_after_mechanism", 1),
@@ -146,13 +146,13 @@ ABILITY_RULES = {
     "monologue": judged("monologue"),
     # explorer
     "curious": at_least("breadth.distinct_tools", 12),
-    "risingstar": growth(GROWTH_STEP),
-    "tireless": at_least("data.active_day_share", 0.60),
+    "rising": growth(GROWTH_STEP),
+    "steadfast": at_least("data.active_day_share", 0.60),
     "pioneer": at_least("breadth.new_tools_this_period", 3),
     # conductor
     "legion": both(at_least("parallel.sessions_with_parallel_share", 0.30),
                    at_most("verification.followup_fix_task_share_est", 0.20)),
-    "strategist": judged("strategist"),
+    "strategy": judged("strategy"),
     "flawless": all_axes_at_least(4),
 }
 
@@ -174,13 +174,13 @@ QUIRK_RULES = {
 # Judgments Claude must make (written to scores.json "judgments").
 JUDGMENTS = {
     "keeneye": "The human points out AI mistakes and is usually right (appraiser).",
-    "lucid": "Tasks keep finishing without rework caused by missing information (architect).",
+    "clarity": "Tasks keep finishing without rework caused by missing information (architect).",
     "inquiry": "Many tasks hand over the symptom and let the AI investigate instead of assuming a cause (architect).",
     "precision": "Requests usually state completion criteria (sniper).",
     "connoisseur": "Many sessions compare several options before deciding (partner).",
     "asking": "Many tasks start by letting the AI ask questions first (partner).",
     "monologue": "The human often finds the answer while explaining to the AI (partner).",
-    "strategist": "Delegation style changes with the nature of the task (conductor).",
+    "strategy": "Delegation style changes with the nature of the task (conductor).",
     "afterthought": "Rework caused by details added after the request (context quirk).",
     "uturn": "Many tasks change direction midway (efficiency quirk).",
     "partner_adopted": "In long back-and-forth sessions, the results end up adopted (partner type).",

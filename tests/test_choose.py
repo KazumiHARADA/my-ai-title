@@ -94,7 +94,7 @@ class TestTypeRules(unittest.TestCase):
 
     def test_tie_goes_to_stronger_ability(self):
         tie = S(c=5, v=5)
-        strong_memo = metrics(context__memo_updates=12)          # sage x3
+        strong_memo = metrics(context__memo_updates=12)          # wisdom x3
         strong_tests = metrics(verification__test_runs=90)       # ironwall x3 > ...
         self.assertEqual(choose_type(DB, ctx(tie, strong_memo)), "architect")
         self.assertEqual(choose_type(DB, ctx(tie, strong_tests)), "appraiser")
@@ -257,7 +257,7 @@ class TestCard(unittest.TestCase):
 
     def test_growth_fills_axis_name(self):
         card = choose.run({"scores": S(2, 2, 2, 2, 2, 4)}, metrics(), "ja", S(2, 2, 2, 2, 2, 2))
-        self.assertEqual(card["ability_id"], "risingstar")
+        self.assertEqual(card["ability_id"], "rising")
         self.assertIn("仕組み化", card["ability"]["why"])
         self.assertTrue(card["rare"])  # +2
 
@@ -268,7 +268,7 @@ class TestCard(unittest.TestCase):
                 sel = select(DB, ctx(S(e=5)))
                 sel.type, sel.ability, sel.rare = type_id, DB.ability(ability_id), rare
                 return choose.pick_image(DB, sel, tmp)
-            self.assertEqual(pick("architect", "sage", False), "assets/characters/fallback/architect.svg")
+            self.assertEqual(pick("architect", "wisdom", False), "assets/characters/fallback/architect.svg")
             (tmp / "sniper_flash.png").write_bytes(b"x")
             self.assertEqual(pick("sniper", "silence", False), "assets/characters/sniper_flash.png")
             self.assertEqual(pick("sniper", "flash", True), "assets/characters/sniper_flash.png")

@@ -368,7 +368,7 @@ def scenario_architect() -> None:
         logs.append(lg)
     _write_scenario("architect", logs,
                     {"context": 5, "delegation": 3, "verification": 3, "autonomy": 2, "efficiency": 4, "systems": 3},
-                    {"type": "architect", "ability_id": "sage", "rare": False, "quirk_id": "hover"})
+                    {"type": "architect", "ability_id": "wisdom", "rare": False, "quirk_id": "hover"})
 
 
 def scenario_partner() -> None:

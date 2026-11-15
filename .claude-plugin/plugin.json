@@ -1,7 +1,7 @@
 {
   "name": "my-ai-title",
   "displayName": "My AI Title",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Reads your local Claude Code session logs, scores how you work with AI on six axes, and renders a shareable trading-card style PNG with your AI title (AI肩書き診断).",
   "author": {
     "name": "KazumiHARADA",

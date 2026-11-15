@@ -67,7 +67,7 @@ body{width:1200px;height:675px;overflow:hidden;font-family:"Hiragino Sans","Noto
 .name .ep{color:color-mix(in srgb,var(--c) 28%,#fff)}
 .name .no-{font-size:.62em;margin:0 .06em;opacity:.85}
 .rare .name .ep{color:#f3dc8a}
-.art img{position:relative;z-index:1;width:92%;max-height:86%;object-fit:contain;margin-top:10px}
+.art img{position:relative;z-index:1;width:92%;max-height:86%;object-fit:contain;margin-top:10px;transform:scale(var(--zoom,1.2));transform-origin:50% 60%}
 .rare .art img{filter:drop-shadow(0 0 14px rgba(255,214,90,.95))}
 </style>
 <script>
@@ -75,7 +75,7 @@ body{width:1200px;height:675px;overflow:hidden;font-family:"Hiragino Sans","Noto
 window.addEventListener('load',()=>{const n=document.querySelector('.name'),box=n.parentElement;
 let s=60;while(n.scrollWidth>box.clientWidth&&s>30){s-=2;n.style.fontSize=s+'px'}});
 </script></head>
-<body class="{{RARE}}" style="--c:{{COLOR}};--tint:{{TINT}}">
+<body class="{{RARE}}" style="--c:{{COLOR}};--tint:{{TINT}};--zoom:{{ZOOM}}">
 <div class="card"><div class="face">
   <div class="art"><span class="no">{{NO}}</span>{{BADGE}}{{CHAR}}</div>
   <div class="right">

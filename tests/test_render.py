@@ -48,7 +48,9 @@ class TestHtml(unittest.TestCase):
             self.assertNotIn('class="rare"', doc)
 
     def test_rare_and_svg_fallback(self):
-        doc = render.build_html(card_for("sage", True, "ja"))   # architect: no PNG yet
+        card = card_for("legion", True, "ja")
+        card["image"] = "assets/characters/fallback/conductor.svg"   # as when the PNG is missing
+        doc = render.build_html(card)
         self.assertIn('class="rare"', doc)
         self.assertNotIn('class="badge"', doc)   # no badge: the frame shows it is rare
         self.assertIn("<svg", doc.split('class="art"')[1][:2000])
@@ -169,9 +171,13 @@ class TestPillow(unittest.TestCase):
         tmp = Path(tempfile.mkdtemp())
         try:
             from PIL import Image
-            for lang, ability, rare in (("ja", "perpetual", True), ("en", "massproduce", True), ("ja", "sage", False)):
+            for lang, ability, rare, svg in (("ja", "perpetual", True, False), ("en", "massproduce", True, False),
+                                             ("ja", "legion", False, True)):
                 out = tmp / f"{lang}-{ability}.png"
-                used = render.render(card_for(ability, rare, lang), out, "pillow")
+                card = card_for(ability, rare, lang)
+                if svg:  # Pillow cannot draw SVG; it falls back to an emblem
+                    card["image"] = "assets/characters/fallback/conductor.svg"
+                used = render.render(card, out, "pillow")
                 self.assertTrue(used.startswith("pillow"))
                 with Image.open(out) as im:
                     self.assertEqual(im.size, (render.WIDTH, render.HEIGHT))

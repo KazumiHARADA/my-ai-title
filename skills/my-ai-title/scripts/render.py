@@ -36,6 +36,7 @@ from typing import List, Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from aititle.pillow_card import char_zoom  # noqa: E402  (no Pillow needed for this)
 from radar import radar  # noqa: E402
 
 SKILL_DIR = Path(__file__).resolve().parents[1]
@@ -91,6 +92,7 @@ def build_html(card: dict) -> str:
         "RARE": "rare" if card["rare"] else "",
         "COLOR": card["color"],
         "TINT": tint(card["color"]),
+        "ZOOM": f"{char_zoom(card.get('type', '')):g}",
         "NO": e(card["no"]),
         "BADGE": "",  # rare cards are shown by the frame and glow only, no badge
         "CHAR": character_html(card["image"]),

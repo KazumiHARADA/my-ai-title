@@ -21,6 +21,16 @@ CTA = {"ja": "あなたのAI肩書きは？", "en": "What's yours?"}
 QUIRK_LABEL = {"ja": "クセ", "en": "Quirk"}
 TITLE_BOX = (512, 896)        # x range of the title column
 TITLE_MAX, TITLE_MIN, TITLE_STEP = 60, 30, 2
+# Character art is normalized (one shared canvas), so every image is enlarged by
+# the same factor around the same point, like ".art img" in the HTML templates.
+CHAR_ZOOM, CHAR_ORIGIN_Y = 1.2, 0.6
+# Per-type adjustment where a character looks bigger or smaller than the others
+# at the same canvas size (judged by eye).
+CHAR_ZOOM_BY_TYPE = {"commander": 1.0, "architect": 1.0, "appraiser": 1.0, "alchemist": 1.1}
+
+
+def char_zoom(type_id: str) -> float:
+    return CHAR_ZOOM_BY_TYPE.get(type_id, CHAR_ZOOM)
 
 _CJK_FONTS = {
     "Darwin": [("/System/Library/Fonts/ヒラギノ角ゴシック W6.ttc", "/System/Library/Fonts/ヒラギノ角ゴシック W3.ttc"),
@@ -179,12 +189,19 @@ def _paste_character(img, card: dict, box: Tuple[int, int, int, int], fonts: Fon
     if path.suffix.lower() in (".png", ".webp"):
         with Image.open(path) as src:
             ch = src.convert("RGBA")
-        max_w, max_h = int((x1 - x0) * 0.92), int((y1 - y0) * 0.86)
+        max_w, max_h = (x1 - x0) * 0.92, (y1 - y0) * 0.86
         scale = min(max_w / ch.width, max_h / ch.height)
-        ch = ch.resize((max(1, int(ch.width * scale)), max(1, int(ch.height * scale))), Image.LANCZOS)
-        px = x0 + ((x1 - x0) - ch.width) // 2
-        py = y0 + ((y1 - y0) - ch.height) // 2 + 10
-        img.alpha_composite(ch, (px, py))
+        bw, bh = ch.width * scale, ch.height * scale
+        left, top = x0 + ((x1 - x0) - bw) / 2, y0 + ((y1 - y0) - bh) / 2 + 10
+        ox, oy = left + bw * 0.5, top + bh * CHAR_ORIGIN_Y
+        zoom = char_zoom(card.get("type", ""))
+        zw, zh = bw * zoom, bh * zoom
+        zl, zt = round(ox - zw * 0.5), round(oy - zh * CHAR_ORIGIN_Y)
+        ch = ch.resize((max(1, round(zw)), max(1, round(zh))), Image.LANCZOS)
+        # clip to the inside of the art panel (3px border)
+        cx0, cy0, cx1, cy1 = max(zl, x0 + 3), max(zt, y0 + 3), min(zl + ch.width, x1 - 3), min(zt + ch.height, y1 - 3)
+        if cx1 > cx0 and cy1 > cy0:
+            img.alpha_composite(ch.crop((cx0 - zl, cy0 - zt, cx1 - zl, cy1 - zt)), (cx0, cy0))
         return
     # SVG cannot be drawn by Pillow: draw a simple emblem in the theme color.
     d = ImageDraw.Draw(img)

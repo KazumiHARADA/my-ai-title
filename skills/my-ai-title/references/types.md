@@ -231,8 +231,8 @@
 | appraiser | keeneye | あら探し名人 | Bug Hunter | See? Right here. It's off. | I knew it was here before we fixed it. | Somehow spots the AI's small mistakes right away. |
 | appraiser | multicheck | 多重チェック | Layered Checks | There's more than one way to check. | There are a hundred more ways to check. | Has many ways to verify, and picks the right one for each situation. |
 | architect | foresight | 段取り八分 | Plan First | Let's start with the big picture. | I knew you'd ask that three days from now. | Never jumps straight to building. A plan comes first. |
-| architect | sage | 前提共有 | Shared Context | I already wrote that down. | I wrote that down six months ago. | Keeps the project's background written down, so the AI never gets lost. |
-| architect | lucid | 伝達完了 | Crystal Clear | The goal is here. That's all. | No more explanation needed. | Hardly anything gets left out. The AI never has to ask back. |
+| architect | wisdom | 前提共有 | Shared Context | I already wrote that down. | I wrote that down six months ago. | Keeps the project's background written down, so the AI never gets lost. |
+| architect | clarity | 伝達完了 | Crystal Clear | The goal is here. That's all. | No more explanation needed. | Hardly anything gets left out. The AI never has to ask back. |
 | architect | inquiry | 調査から入る | Investigate First | Let's not decide the cause yet. | Let's find the cause of the cause. | Never jumps to conclusions. Lets the AI investigate first, then thinks. |
 | alchemist | sloth | 二度手間アレルギー | Allergic to Repeats | The system does the work. | Haven't written a single line today. | Ask for the same thing a few times, and it soon becomes a tool. |
 | alchemist | hundredtools | 道具箱 | Toolbox | There's a tool for that. | Is there any job without a tool? | Uses homemade tools almost every day. |
@@ -247,11 +247,11 @@
 | partner | asking | 逆質問 | Questions First | Go ahead, ask me first. | By the time the questions end, the answer is there. | Before starting, lets the AI ask questions to sort out the thinking. |
 | partner | monologue | ひとり会議 | Thinking Out Loud | …Oh, saying it out loud helped. | I knew before I said it. | Explaining things to the AI often turns up the answer midway. |
 | explorer | curious | 好奇心 | Curiosity | Could AI handle this too? | Still haven't found anything AI can't do. | Hands all kinds of things to the AI, just to see. |
-| explorer | risingstar | 急成長 | Growth Spurt | Not the same as last month. | Already beating last week's self. | {axis} has jumped since last time. Growing fastest right now. |
-| explorer | tireless | 皆勤賞 | Perfect Attendance | Let's do this again today. | Can't find a reason to stop. | A day without teaming up with the AI is the rare one. |
+| explorer | rising | 急成長 | Growth Spurt | Not the same as last month. | Already beating last week's self. | {axis} has jumped since last time. Growing fastest right now. |
+| explorer | steadfast | 皆勤賞 | Perfect Attendance | Let's do this again today. | Can't find a reason to stop. | A day without teaming up with the AI is the rare one. |
 | explorer | pioneer | 初挑戦 | First Try | A way of using it no one has tried yet. | I only walk roads that aren't on the map. | Finds a new way to use AI and tries it right away. |
 | conductor | legion | 全軍指揮 | Command of Legions | Everyone, take your positions. | All units, move freely. We win anyway. | Runs many AIs at once, and hardly ever has to fix anything afterward. |
-| conductor | strategist | 適材適所 | Right Task, Right Hands | This part's yours. This part's mine. | I already see everyone's role. | Knows exactly what to delegate and what to keep. |
+| conductor | strategy | 適材適所 | Right Task, Right Hands | This part's yours. This part's mine. | I already see everyone's role. | Knows exactly what to delegate and what to keep. |
 | conductor | flawless | 死角なし | No Blind Spots | Nothing in particular to add. | There's no one to compare with. | All six strengths are high. No weak spot in sight. |
 
 ### 軸

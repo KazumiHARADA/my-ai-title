@@ -2,12 +2,17 @@
 """Shrink character images for distribution (needs Pillow).
 
 Usage:
-    python3 tools/optimize_images.py SRC_DIR OUT_DIR [--width 800] [--webp]
+    python3 tools/optimize_images.py SRC_DIR OUT_DIR [--width 800] [--webp] [--trim]
 
-Reads every .png/.webp in SRC_DIR (not recursive), trims transparent margins,
-scales it down to at most --width pixels wide (never up), and writes an
-optimized PNG (or lossless-alpha WebP with --webp) with the same base name to
-OUT_DIR. SRC_DIR is never modified, so keep your full-size originals there.
+Reads every .png/.webp in SRC_DIR (not recursive), scales it down to at most
+--width pixels wide (never up), and writes an optimized PNG (or WebP with
+--webp) with the same base name to OUT_DIR. SRC_DIR is never modified, so keep
+your full-size originals there.
+
+The canvas is kept as is: the character art is normalized (every image shares
+one canvas with the character placed consistently), and trimming the
+transparent margins would undo that. Use --trim only for art that is not
+normalized.
 """
 from __future__ import annotations
 
@@ -16,11 +21,11 @@ import sys
 from pathlib import Path
 
 
-def optimize(src: Path, out_dir: Path, width: int, webp: bool) -> tuple:
+def optimize(src: Path, out_dir: Path, width: int, webp: bool, trim: bool = False) -> tuple:
     from PIL import Image
     with Image.open(src) as im:
         img = im.convert("RGBA")
-    box = img.getchannel("A").getbbox()
+    box = img.getchannel("A").getbbox() if trim else None
     if box:
         img = img.crop(box)
     if img.width > width:
@@ -40,6 +45,7 @@ def main(argv=None) -> int:
     ap.add_argument("out", type=Path)
     ap.add_argument("--width", type=int, default=800)
     ap.add_argument("--webp", action="store_true")
+    ap.add_argument("--trim", action="store_true", help="crop transparent margins (not for normalized art)")
     args = ap.parse_args(argv)
     if args.src.resolve() == args.out.resolve():
         ap.error("OUT_DIR must differ from SRC_DIR (originals are never overwritten)")
@@ -51,7 +57,7 @@ def main(argv=None) -> int:
     args.out.mkdir(parents=True, exist_ok=True)
     before = after = 0
     for src in sorted(p for p in args.src.iterdir() if p.suffix.lower() in (".png", ".webp")):
-        b, a, size = optimize(src, args.out, args.width, args.webp)
+        b, a, size = optimize(src, args.out, args.width, args.webp, args.trim)
         before, after = before + b, after + a
         print(f"{src.name}: {b // 1024} KB -> {a // 1024} KB  {size[0]}x{size[1]}")
     print(f"total: {before / 1e6:.1f} MB -> {after / 1e6:.1f} MB")
