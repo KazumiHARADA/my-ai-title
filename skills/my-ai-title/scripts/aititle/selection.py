@@ -44,6 +44,7 @@ PARTNER_PROMPTS_PER_TASK = 6       # "1タスクあたりの往復が多い"
 RARE_MIN_SESSIONS = 20             # per 30 days
 GROWTH_STEP = 1                    # 急成長: an axis rose by this much
 RARE_GROWTH = 2                    # explorer rare: an axis rose by this much
+RARE_APPRAISER_FIX_SHARE = 0.05    # appraiser rare: tasks with a problem found after "done"
 
 
 # --- condition primitives ------------------------------------------------------
@@ -192,7 +193,9 @@ def _rare_achievements(c: Ctx) -> Dict[str, bool]:
     v = lambda k: c.value(k) or 0.0  # noqa: E731
     return {
         "commander": v("autonomy.long_runs_completed") >= 10 * s,
-        "appraiser": c.value("verification.followup_fix_prompts_est") == 0 and v("verification.methods_used") >= 3,
+        "appraiser": (c.value("verification.followup_fix_task_share_est") is not None
+                      and v("verification.followup_fix_task_share_est") <= RARE_APPRAISER_FIX_SHARE
+                      and v("verification.methods_used") >= 3),
         "architect": v("intervention.max_clean_task_streak") >= 15,
         "alchemist": v("systems.own_mechanism_calls") >= 20 * s,
         "sniper": v("intervention.tasks_within_2_prompts_no_rework") >= 10 * s,
@@ -236,7 +239,9 @@ def choose_type(db: TypesDB, c: Ctx) -> str:
             candidates.append(t)
     if len(candidates) == 1:
         return candidates[0]
-    return max(candidates, key=lambda t: _rank_key(best_ability(db, t, c)[1], TIE_ORDER.index(t)))
+    # Tie: prefer the type closer to its rare card, then the stronger ability.
+    return max(candidates, key=lambda t: (sum(rare_conditions(t, c)),)
+               + _rank_key(best_ability(db, t, c)[1], TIE_ORDER.index(t)))
 
 
 def choose_quirk(db: TypesDB, type_id: str, c: Ctx) -> Optional[Quirk]:
@@ -259,17 +264,23 @@ def choose_quirk(db: TypesDB, type_id: str, c: Ctx) -> Optional[Quirk]:
     return q
 
 
-def is_rare(type_id: str, c: Ctx) -> bool:
+def rare_conditions(type_id: str, c: Ctx) -> Tuple[bool, bool, bool]:
+    """The three rare conditions of types.md: (deciding axis at 5, achievement, enough sessions)."""
     sessions = c.value("data.sessions") or 0
-    if sessions < math.ceil(RARE_MIN_SESSIONS * c.scale):
-        return False
-    deciding = DECIDING_AXES[type_id]
-    if type_id not in ("explorer", "partner", "conductor") and any(c.scores[a] != 5 for a in deciding):
-        return False
+    enough = sessions >= math.ceil(RARE_MIN_SESSIONS * c.scale)
+    if type_id in ("explorer", "partner"):
+        axis_ok = True
+    elif type_id == "conductor":
+        axis_ok = min(c.scores.values()) >= 4
+    else:
+        axis_ok = all(c.scores[a] == 5 for a in DECIDING_AXES[type_id])
     ach = _rare_achievements(c)
-    if type_id == "conductor":
-        return min(c.scores.values()) >= 4 and sum(ach.values()) >= 2
-    return ach[type_id]
+    achieved = sum(ach.values()) >= 2 if type_id == "conductor" else ach[type_id]
+    return axis_ok, achieved, enough
+
+
+def is_rare(type_id: str, c: Ctx) -> bool:
+    return all(rare_conditions(type_id, c))
 
 
 @dataclass

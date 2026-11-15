@@ -99,6 +99,16 @@ class TestTypeRules(unittest.TestCase):
         self.assertEqual(choose_type(DB, ctx(tie, strong_memo)), "architect")
         self.assertEqual(choose_type(DB, ctx(tie, strong_tests)), "appraiser")
 
+    def test_tie_prefers_type_closer_to_rare(self):
+        tie = S(c=5, v=5)
+        # architect has the stronger ability, but appraiser meets its rare achievement
+        m = metrics(context__memo_updates=12, verification__followup_fix_task_share_est=0.04,
+                    verification__methods_used=3)
+        self.assertEqual(choose_type(DB, ctx(tie, m)), "appraiser")
+        # commander and alchemist: achievements met for both -> stronger ability decides
+        m = metrics(autonomy__long_runs_completed=600, systems__own_mechanism_calls=120)
+        self.assertEqual(choose_type(DB, ctx(S(d=4, a=4, s=4, v=4), m)), "commander")
+
     def test_tie_with_no_signal_uses_fixed_order(self):
         self.assertEqual(choose_type(DB, ctx(S(c=5, v=5))), "appraiser")
         self.assertEqual(choose_type(DB, ctx(S(e=5, d=5))), "sniper")
@@ -172,6 +182,15 @@ class TestRare(unittest.TestCase):
         m = self.rare_sniper(data__sessions=10, intervention__tasks_within_2_prompts_no_rework=5)
         m["period"]["days"] = 15
         self.assertTrue(is_rare("sniper", ctx(S(e=5), m)))
+
+    def test_appraiser_rare_uses_share_of_tasks(self):
+        ok = metrics(verification__followup_fix_task_share_est=0.05, verification__methods_used=3,
+                     verification__followup_fix_prompts_est=40)
+        self.assertTrue(is_rare("appraiser", ctx(S(v=5), ok)))
+        too_many = metrics(verification__followup_fix_task_share_est=0.06, verification__methods_used=3)
+        self.assertFalse(is_rare("appraiser", ctx(S(v=5), too_many)))
+        few_methods = metrics(verification__followup_fix_task_share_est=0.0, verification__methods_used=2)
+        self.assertFalse(is_rare("appraiser", ctx(S(v=5), few_methods)))
 
     def test_commander_needs_both_axes_at_five(self):
         m = metrics(autonomy__long_runs_completed=15)
