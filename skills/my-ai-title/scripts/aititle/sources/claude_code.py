@@ -113,11 +113,14 @@ class _SessionBuilder:
     def __init__(self, session_id: str):
         self.session = E.Session(id=session_id, project="")
         self.seen_uuids: Set[str] = set()
+        self.first_cwd = ""   # memory only; used for --project filtering
 
     def note_meta(self, obj: dict) -> None:
         s = self.session
         cwd = obj.get("cwd")
         if isinstance(cwd, str) and cwd:
+            if not self.first_cwd:
+                self.first_cwd = cwd
             if not s.project:
                 s.project = project_key(cwd)
             if re.search(r"[/\\]\.claude[/\\]worktrees[/\\]", cwd):
@@ -337,11 +340,19 @@ def _session_files(root: Path) -> Iterable[Tuple[Path, List[Path]]]:
             yield main, subs
 
 
+def under(path: str, prefix: str) -> bool:
+    p, q = os.path.normpath(path), os.path.normpath(prefix)
+    return p == q or p.startswith(q.rstrip(os.sep) + os.sep)
+
+
 def read_sessions(root: Optional[Path] = None, since: Optional[datetime] = None,
                   until: Optional[datetime] = None,
-                  history_since: Optional[datetime] = None) -> E.ReadResult:
+                  history_since: Optional[datetime] = None,
+                  project: Optional[str] = None) -> E.ReadResult:
     """Read all sessions with events in [since, until).
 
+    ``project``: if given, only sessions that started in this directory (or
+    below it, including its worktrees) are read.
     ``history_since``: if given, tool names used in [history_since, since) are
     collected (used for "new usage in this period"). Files last modified before
     ``since`` are scanned cheaply with a regex instead of being parsed.
@@ -351,7 +362,11 @@ def read_sessions(root: Optional[Path] = None, since: Optional[datetime] = None,
     sessions: List[E.Session] = []
     before: Set[str] = set()
     skipped = 0
+    project = os.path.abspath(os.path.expanduser(project)) if project else None
+    encoded = re.sub(r"[^A-Za-z0-9]", "-", project) if project else ""
     for main, subs in _session_files(root):
+        if project and not main.parent.name.startswith(encoded):
+            continue
         try:
             mtime = datetime.fromtimestamp(max(p.stat().st_mtime for p in [main] + subs), timezone.utc)
         except OSError:
@@ -367,6 +382,8 @@ def read_sessions(root: Optional[Path] = None, since: Optional[datetime] = None,
         _read_file(main, b, None, since, until, counters, before, history_since)
         for sub in subs:
             _read_file(sub, b, sub.stem, since, until, counters, before, history_since)
+        if project and not under(b.first_cwd, project):
+            continue
         b.session.subagent_logs = len(subs)
         b.session.events.sort(key=lambda e: e.ts)
         if b.session.events:

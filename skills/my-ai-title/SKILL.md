@@ -19,7 +19,7 @@ Produce one 1200×675 PNG card that describes how the user works with AI. Number
 
 All intermediate files go in a temporary work directory (`$WORK`, e.g. created with `mktemp -d`). Do not write them into the user's project.
 
-1. **Period** — Default is the last 30 days. Use the user's period if they give one.
+1. **Period and scope** — Default is the last 30 days of all projects. Use the user's period if they give one. If they want only one project, add `--project <dir>` to both `extract.py` and `sample.py` (sessions started in that directory or below it, including its worktrees).
 2. **Extract** — Run
    `python3 ${CLAUDE_SKILL_DIR}/scripts/extract.py --days 30 --out $WORK/metrics.json`
 3. **Check data volume** — If `metrics.json` shows fewer than 5 sessions, tell the user and ask whether to stop or continue with lower accuracy.

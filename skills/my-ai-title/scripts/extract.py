@@ -3,7 +3,7 @@
 
 Usage:
     python3 extract.py [--days 30 | --since YYYY-MM-DD [--until YYYY-MM-DD]]
-                       [--logs-dir DIR] [--out metrics.json]
+                       [--project DIR] [--logs-dir DIR] [--out metrics.json]
 
 Reads local files only. No network access. Output holds no text, names or paths.
 """
@@ -37,12 +37,14 @@ def window(args: argparse.Namespace) -> Tuple[datetime, datetime]:
     return since, until
 
 
-def run(logs_dir: Optional[Path], since: datetime, until: datetime) -> dict:
+def run(logs_dir: Optional[Path], since: datetime, until: datetime, project: Optional[str] = None) -> dict:
     read = claude_code.read_sessions(logs_dir, since, until,
-                                     history_since=since - timedelta(days=HISTORY_DAYS))
+                                     history_since=since - timedelta(days=HISTORY_DAYS), project=project)
     stats = analyze(read.sessions)
     on_disk = claude_code.skill_names_on_disk(logs_dir)
-    return build_metrics(stats, read, since, until, on_disk)
+    metrics = build_metrics(stats, read, since, until, on_disk)
+    metrics["scope"] = "project" if project else "all"   # the path itself is not recorded
+    return metrics
 
 
 def main(argv=None) -> int:
@@ -52,10 +54,12 @@ def main(argv=None) -> int:
     ap.add_argument("--until", type=_date)
     ap.add_argument("--logs-dir", type=Path, default=None,
                     help="default: $CLAUDE_CONFIG_DIR/projects or ~/.claude/projects")
+    ap.add_argument("--project", default=None,
+                    help="only sessions started in this directory (or below it)")
     ap.add_argument("--out", type=Path, default=Path("metrics.json"))
     args = ap.parse_args(argv)
     since, until = window(args)
-    metrics = run(args.logs_dir, since, until)
+    metrics = run(args.logs_dir, since, until, args.project)
     args.out.write_text(json.dumps(metrics, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     d = metrics["data"]
     print(f"sessions={d['sessions']} tasks={d['tasks']} prompts={d['human_prompts']} "

@@ -83,6 +83,79 @@ investigate investigated found looks look checked created updated fixed bumped a
 """.split())
 
 
+# --- Japanese proper nouns --------------------------------------------------------
+_KATA = "ァ-ヺー"
+_KANJI = "一-龯々〆ヶ"
+# People: a name right before an honorific. Generic nouns that take 様/さん are kept.
+_HONORIFIC_RE = re.compile(
+    r"(?<![A-Za-z" + _KATA + _KANJI + r"])"
+    r"([A-Za-z][A-Za-z0-9_\-]*|[" + _KATA + r"]{2,10}|[" + _KANJI + r"]{1,4})"
+    r"(\s?)(さん|様|さま|氏|くん|君|ちゃん|殿)")
+_HONORIFIC_KEEP = {"客", "お客", "皆", "皆々", "各位", "担当者", "担当", "利用者", "先方", "顧客", "管理者", "代理店",
+                   "会員", "患者", "店員", "社員", "受講者", "参加者", "候補者", "相手", "先生", "御社", "貴社",
+                   "利用者様", "ユーザー", "オペレーター", "お母", "お父", "奥", "旦那", "王", "神"}
+# Companies: legal-form prefix, or a kanji/katakana stem plus a company-like suffix.
+_COMPANY_RE = re.compile(
+    r"(株式会社|有限会社|合同会社|一般社団法人|公益社団法人|一般財団法人|医療法人|学校法人)\s?[" + _KATA + _KANJI + r"A-Za-z0-9・]{1,15}"
+    r"|[" + _KATA + _KANJI + r"]{1,12}(株式会社|製薬|銀行|商事|工業|電機|建設|不動産|証券|保険|ホールディングス"
+    r"|製作所|薬品|物産|興業|電力|鉄道|信用金庫)")
+# Addresses: prefecture followed by place names.
+_ADDRESS_RE = re.compile(
+    r"(北海道|東京都|京都府|大阪府|[" + _KANJI + r"]{2,3}県)"
+    r"(?:[" + _KANJI + _KATA + r"0-9０-９\-－]|[ \u3000](?=[" + _KANJI + r"0-9０-９])){0,24}")
+_KATA_RUN_RE = re.compile(r"[" + _KATA + r"・]{2,}")
+# Common katakana words (loanwords). A katakana run is kept only if it can be
+# split entirely into these; anything else (product, shop, person names) is masked.
+_KATA_COMMON = set("""
+アイコン アカウント アクション アクセス アップ アップデート アップロード アドレス アバター アプリ アプリケーション
+アラート アルゴリズム アンケート イベント イメージ インストール インターフェース インデックス インポート ウィザード
+ウィンドウ エージェント エクスポート エラー エリア エンジン エンジニア エントリ エンド オプション オフ オン オペレーター
+オリジナル カウント カスタム カタカナ カテゴリ カテゴリー カード カバー カラム カレンダー キャッシュ キャラクター キャンセル
+キュー キー キーワード クエリ クライアント クラス クラウド クリック クリア グループ ケース ゲスト コード コール コマンド
+コミット コメント コンソール コンテキスト コンテナ コンテンツ コンポーネント コントローラー コピー コスト ゴール サーバー
+サービス サイクル サイズ サイト サブ サポート サンプル シート システム シナリオ シフト ショート ジョブ スキーマ スキル
+スクリプト スクリーンショット スクショ スクロール スケジュール スコア ステータス ステップ ストレージ スタイル スペース
+スペック スレッド セッション セット センター ソース ソート ソフト タイトル タイプ タイマー タイミング タグ タスク タブ
+ダイヤル ダイヤルパッド チーム チェック チケット チャット チャネル チャンネル ツール テーブル テキスト テスト デザイン
+デバッグ デフォルト デプロイ データ データベース デモ トーク トークン トップ トピック トラブル トリガー ドキュメント
+ドメイン ドラフト ナビ ネット ネットワーク ノート ハンドラ バー バグ バックアップ バックエンド バッジ バッチ バージョン
+バリデーション パス パスワード パターン パッケージ パネル パフォーマンス パラメータ パーサー パース ビルド ビュー ビューア
+ビューアー ファイル フィルタ フィルター フィールド フォーム フォルダ フォーマット フォロー フック フラグ フレーム
+フロー フロント フロントエンド ブラウザ ブランチ ブロック プッシュ プラン プラグイン プレビュー プログラム プロジェクト
+プロセス プロダクト プロパティ プロンプト ページ ヘッダー ベース ペイン ペース ベル ボタン ポート ポリシー マイグレーション
+マージ マスター マップ マニュアル メール メイン メッセージ メニュー メモ メモリ メモリー メンバー メソッド モード モジュール
+モデル モニター ユーザー ユニット ライブラリ ライン ラベル ランキング リアルタイム リクエスト リスト リセット リソース
+リップシンク リトライ リポジトリ リマインド リモート リリース リンク リード ルート ルール レイアウト レコード レスポンス
+レビュー レベル レポート ロール ロールプレイ ロープレ ローカル ロード ログ ログイン ロジック ロビー ワーク ワークフロー
+アウト イン オート オートコール テンプレート トラッキング ステージング プロダクション ジャンル ナンバー オーダー
+カスタマー サマリー サマリ チャート グラフ スライド コンテ アイデア アイディア ポイント メリット デメリット リスク
+スタート ストップ ゴール ハイライト シンプル ミス ルーチン バランス ペア ベスト ルーム ホーム ヘルプ サイン サインイン
+アリ ナシ カート ショップ ストア セール ニュース クーポン プレゼン ミーティング パソコン スマホ スマートフォン
+タブレット ダッシュボード ログアウト サインアップ エディタ エディター ターミナル シェル ゲーム ストーリー キャンペーン
+マーケティング セールス ビジネス メトリクス ダウンロード ハッシュ ハッシュタグ プロフィール アイテム グラフィック
+ポップアップ モーダル トースト ドロップダウン チェックボックス ラジオ テキストボックス スピナー リロード キャプチャ
+""".split())
+
+
+def _kata_ok(word: str) -> bool:
+    w = word.replace("・", "")
+    ok = [True] + [False] * len(w)
+    for i in range(len(w)):
+        if ok[i]:
+            for j in range(i + 2, min(len(w), i + 14) + 1):
+                if w[i:j] in _KATA_COMMON:
+                    ok[j] = True
+    return ok[len(w)]
+
+
+def _japanese(t: str) -> str:
+    t = _COMPANY_RE.sub(NAME, t)
+    t = _ADDRESS_RE.sub(NAME, t)
+    t = _HONORIFIC_RE.sub(lambda m: m.group(0) if m.group(1) in _HONORIFIC_KEEP
+                          else NAME + m.group(2) + m.group(3), t)
+    return _KATA_RUN_RE.sub(lambda m: m.group(0) if _kata_ok(m.group(0)) else NAME, t)
+
+
 def _sentence_start(text: str, pos: int) -> bool:
     before = text[:pos].rstrip(" \t\"'(")
     return not before or before[-1] in ".!?\n:。！？"
@@ -123,7 +196,7 @@ def _logish(line: str) -> bool:
 
 
 def redact(text: str, terms: Optional[Iterable[str]] = None, limit: Optional[int] = None) -> str:
-    t = text
+    t = text.replace("**", "")   # bold markers would split names and addresses
     t = _CODE_BLOCK_RE.sub(" " + CODE + " ", t)
     t = _XMLISH_BLOCK_RE.sub(" " + CODE + " ", t)
     for rx in _SECRET_RES:
@@ -144,6 +217,7 @@ def redact(text: str, terms: Optional[Iterable[str]] = None, limit: Optional[int
     for term in sorted(terms_lower, key=len, reverse=True):
         if not re.fullmatch(r"[A-Za-z][A-Za-z0-9]*", term):
             t = re.sub(re.escape(term), NAME, t, flags=re.IGNORECASE)
+    t = _japanese(t)
     t = _tokenwise(t, bool(_CJK_RE.search(t)), terms_lower)
     t = _NUM_RE.sub(NUM, t)
     t = re.sub("([" + CODE + LOG + r"])(\s*[" + CODE + LOG + r"])+", r"\1", t)

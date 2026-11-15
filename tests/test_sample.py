@@ -62,6 +62,18 @@ class TestRedact(unittest.TestCase):
         # everyday words collected from branch names are not masked
         self.check("run the test again", [], ["run the test again"], terms={"test", "acme"})
 
+    def test_japanese_proper_nouns(self):
+        self.check("大和田製薬のフローを確認して", ["大和田"], ["のフローを確認して"])
+        self.check("株式会社フガの件", ["フガ"], ["の件"])
+        self.check("Zed さんの基準で見て", ["Zed"], ["さんの基準で見て"])
+        self.check("田中さんに確認して、お客様と担当者様にも連絡", ["田中"], ["さんに確認", "お客様", "担当者様"])
+        self.check("ホゲモア受注の復唱ナシ版", ["ホゲモア"], ["受注", "ナシ"])
+        self.check("東京都目黒区三田の番地", ["目黒", "三田"], ["の番地"])
+        self.check("続いて、北海道函館市 末広町の住所", ["函館", "末広"], ["の住所"])
+        self.check("続いて、北海道函館市 **末広町**の住所", ["函館", "末広"], ["の住所"])
+        self.check("トウキョウトメグロクミタ の番地", ["トウキョウ"], ["の番地"])
+        self.check("コールフローとダイヤルパッドのテスト", [], ["コールフローとダイヤルパッドのテスト"])
+
     def test_code_is_omitted(self):
         out = self.check("look:\n```python\nAPI_KEY='x'\nprint(1)\n```\nand `rm -rf /` please",
                          ["API_KEY", "print", "rm -rf"], ["[CODE]", "please"])

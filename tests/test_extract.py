@@ -84,6 +84,18 @@ class TestReader(unittest.TestCase):
         finally:
             shutil.rmtree(tmp)
 
+    def test_project_filter(self):
+        res = claude_code.read_sessions(PROJECTS, SINCE, UNTIL, project="/Users/demo/Projects/zeta-api")
+        self.assertEqual([s.id[:4] for s in res.sessions], ["2222"])     # worktree session included
+        res = claude_code.read_sessions(PROJECTS, SINCE, UNTIL, project="/Users/demo/Projects/acme")
+        self.assertEqual(res.sessions, [])                               # prefix must be a whole directory
+        self.assertTrue(claude_code.under("/a/b/c", "/a/b"))
+        self.assertFalse(claude_code.under("/a/bc", "/a/b"))
+        m = extract.run(PROJECTS, SINCE, UNTIL, "/Users/demo/Projects/acme-shop")
+        self.assertEqual(m["data"]["sessions"], 1)
+        self.assertEqual(m["scope"], "project")
+        self.assertNotIn("acme", json.dumps(m))
+
     def test_parse_ts_variants(self):
         for s in ("2026-10-01T00:00:00Z", "2026-10-01T00:00:00.1Z", "2026-10-01T00:00:00.123456789Z",
                   "2026-10-01T09:00:00+09:00", "2026-10-01T00:00:00"):
