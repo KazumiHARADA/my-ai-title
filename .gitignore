@@ -1,0 +1,46 @@
+# ===== Real-log outputs: never commit (public repo) =====
+# Intermediate files produced when running the skill against real logs
+metrics.json
+scores.json
+card.json
+samples*.json
+excerpts*
+.my-ai-title/
+
+# Generated card images (character art under skills/*/assets/ is allowed)
+*.png
+!skills/my-ai-title/assets/**/*.png
+
+# Raw session logs: only synthetic fixtures under tests/fixtures/ are allowed
+*.jsonl
+!tests/fixtures/**
+
+# ===== Private working docs =====
+SPEC_my-ai-title.md
+
+# ===== Secrets =====
+.env
+.env.*
+
+# ===== Python =====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# ===== OS / editors =====
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+
+# ===== Claude Code local settings =====
+.claude/settings.local.json

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:1200px;height:675px;overflow:hidden;font-family:"Hiragino Sans","Noto Sans CJK JP","Yu Gothic UI","Meiryo",sans-serif;
+  background:radial-gradient(90% 120% at 30% 40%,color-mix(in srgb,var(--c) 45%,#0d1220),#0a0d16 80%);
+  display:flex;align-items:center;justify-content:center}
+.card{position:relative;width:1140px;height:615px;border-radius:34px;padding:16px;
+  background:linear-gradient(120deg,color-mix(in srgb,var(--c) 30%,#fff) 0%,var(--c) 30%,color-mix(in srgb,var(--c) 55%,#000) 65%,color-mix(in srgb,var(--c) 25%,#fff) 100%);
+  box-shadow:0 30px 70px rgba(0,0,0,.55)}
+.face{height:100%;border-radius:22px;display:grid;grid-template-columns:420px 1fr;gap:24px;padding:22px 30px 22px 22px;
+  background:linear-gradient(160deg,color-mix(in srgb,var(--c) 22%,#121826),#0f1420)}
+.art{position:relative;border-radius:18px;overflow:hidden;border:3px solid color-mix(in srgb,var(--c) 45%,#fff);
+  background:repeating-conic-gradient(from 0deg at 50% 78%,transparent 0 6deg,color-mix(in srgb,var(--c) 14%,transparent) 6deg 12deg),
+             radial-gradient(circle at 50% 60%,#fff 0%,var(--tint) 55%,color-mix(in srgb,var(--tint) 70%,var(--c)) 100%);
+  display:flex;align-items:center;justify-content:center}
+.art svg{position:relative;z-index:1;width:400px;height:400px;margin-top:24px}
+.no{position:absolute;left:16px;top:12px;font-size:19px;font-weight:700;color:color-mix(in srgb,var(--c) 70%,#000);opacity:.7}
+.right{display:grid;grid-template-columns:minmax(0,1fr) 216px;grid-template-rows:auto 1fr auto;column-gap:12px;row-gap:12px;min-width:0}
+.right>.box,.right>.foot{grid-column:1/3}
+.title{align-self:center;min-width:0;overflow:hidden}
+.radar{margin:-8px -6px -4px 0}.radar svg{width:216px;height:216px;display:block}
+/* epi unused */ .x-epi{color:color-mix(in srgb,var(--c) 30%,#fff);font-size:27px;font-weight:700;margin-bottom:6px}
+.rare /* epi unused */ .x-epi{color:#f3dc8a}
+.name{white-space:nowrap;color:#fff;font-size:60px;font-weight:800;line-height:1;letter-spacing:.02em}
+.en{color:color-mix(in srgb,var(--c) 35%,#fff);font-size:22px;font-weight:600;margin-top:8px}
+.box{border-radius:16px;padding:20px 24px;background:#F4F6FA;color:#1b2230;display:flex;flex-direction:column;justify-content:center;gap:12px}
+.eff{font-size:23px;line-height:1.55}
+.eff b{display:block;font-size:30px;font-weight:800;margin-bottom:6px;color:color-mix(in srgb,var(--c) 75%,#000)}
+.weak{border-top:2px dashed #d5dae4;padding-top:12px}
+.wh{display:flex;align-items:center;gap:10px}
+.wh span{font-size:15px;font-weight:800;color:#fff;background:color-mix(in srgb,var(--c) 75%,#000);border-radius:6px;padding:2px 8px}
+.wh b{font-size:21px;font-weight:800;color:#2a3140}
+.weak p{font-size:19px;line-height:1.5;color:#4a5263;margin-top:4px}
+.quote{color:#fff;font-size:21px;font-weight:600;margin-top:8px;opacity:.85}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);justify-items:center;margin-top:auto}
+.st{text-align:center;color:rgba(255,255,255,.75);font-size:17px;font-weight:600}
+.st i{display:block;font-style:normal;margin:5px auto 0;width:56px;height:62px;line-height:62px;font-size:28px;font-weight:800;color:#fff;
+  clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);
+  background:linear-gradient(160deg,color-mix(in srgb,var(--c) 60%,#fff),color-mix(in srgb,var(--c) 70%,#000))}
+.foot{display:flex;justify-content:space-between;align-items:center;color:rgba(255,255,255,.5);font-size:15px}
+.cta{color:rgba(255,255,255,.85);font-size:17px;font-weight:600}.cta b{margin-left:10px;color:color-mix(in srgb,var(--c) 40%,#fff)}
+.rare .cta b{color:#f3dc8a}
+/* レア版：どのタイプにも出る。枠は金とホロ、絵の背景に金の光 */
+.rare .card{background:linear-gradient(120deg,#fff6cf,#d4af37 25%,#7a5c12 55%,#f3dc8a 80%,#b8901f)}
+.rare .card::after{content:"";position:absolute;inset:0;border-radius:34px;padding:16px;pointer-events:none;mix-blend-mode:overlay;opacity:.6;
+  background:conic-gradient(from 210deg at 70% 30%,#ff6ad5,#ffd36a,#6affb4,#6ad5ff,#b06aff,#ff6ad5);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+.rare .art{border-color:#f3dc8a;background:repeating-conic-gradient(from 0deg at 50% 78%,transparent 0 6deg,rgba(243,210,110,.22) 6deg 12deg),
+  radial-gradient(circle at 50% 58%,color-mix(in srgb,var(--c) 45%,#fff3c4) 0%,color-mix(in srgb,var(--c) 70%,#1a1408) 62%,color-mix(in srgb,var(--c) 40%,#0b0d12) 100%)}
+.rare .art::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;opacity:.45;
+  background:conic-gradient(from 120deg at 30% 20%,#ff6ad5,#ffd36a,#6affb4,#6ad5ff,#b06aff,#ff6ad5)}
+.rare .no{color:#f3dc8a}
+.rare .art svg{filter:drop-shadow(0 0 14px rgba(255,214,90,.95)) drop-shadow(0 0 30px rgba(255,236,160,.7))}
+.badge{position:absolute;right:14px;top:12px;z-index:1;padding:6px 16px;border-radius:999px;font-size:18px;font-weight:800;color:#5a420a;background:linear-gradient(135deg,#fff6cf,#d4af37)}
+.ribbon{position:absolute;left:50%;bottom:22px;transform:translateX(-50%) rotate(-3deg);z-index:2;white-space:nowrap}
+.ribbon span{position:relative;display:block;padding:10px 34px;font-size:28px;font-weight:800;color:#fff;letter-spacing:.04em;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--c) 85%,#fff),color-mix(in srgb,var(--c) 80%,#000));
+  border:3px solid #2A2118;border-radius:6px;box-shadow:0 6px 0 rgba(0,0,0,.25);text-shadow:0 2px 0 rgba(0,0,0,.25)}
+.ribbon::before,.ribbon::after{content:"";position:absolute;top:14px;width:30px;height:100%;z-index:-1;border:3px solid #2A2118;
+  background:color-mix(in srgb,var(--c) 60%,#000)}
+.ribbon::before{left:-22px;clip-path:polygon(0 0,100% 0,100% 100%,0 100%,30% 50%)}
+.ribbon::after{right:-22px;clip-path:polygon(0 0,100% 0,70% 50%,100% 100%,0 100%)}
+.rare .ribbon span{color:#5a420a;text-shadow:none;background:linear-gradient(180deg,#fff6cf,#e3b93c 55%,#b8901f)}
+.rare .ribbon::before,.rare .ribbon::after{background:#9a7414}
+
+.name .ep{color:color-mix(in srgb,var(--c) 28%,#fff)}
+.name .no-{font-size:.62em;margin:0 .06em;opacity:.85}
+.rare .name .ep{color:#f3dc8a}
+.art img{position:relative;z-index:1;width:92%;max-height:86%;object-fit:contain;margin-top:10px}
+.rare .art img{filter:drop-shadow(0 0 14px rgba(255,214,90,.95))}
+</style>
+<script>
+// 称号がタイトル欄に収まるよう文字サイズを自動で縮める
+window.addEventListener('load',()=>{const n=document.querySelector('.name'),box=n.parentElement;
+let s=60;while(n.scrollWidth>box.clientWidth&&s>30){s-=2;n.style.fontSize=s+'px'}});
+</script></head>
+<body class="{{RARE}}" style="--c:{{COLOR}};--tint:{{TINT}}">
+<div class="card"><div class="face">
+  <div class="art"><span class="no">{{NO}}</span>{{BADGE}}{{CHAR}}</div>
+  <div class="right">
+    <div class="title"><div class="name"><span class="ep">{{EPITHET_STEM}}</span><span class="no-">の</span>{{NAME}}</div><div class="en">{{EN}}</div><div class="quote">「{{QUOTE}}」</div></div>
+    <div class="radar">{{RADAR}}</div>
+    <div class="box">
+      <div class="eff"><b>【{{ABILITY}}】</b>{{ABILITY_WHY}}</div>
+      <div class="weak"><div class="wh"><span>クセ</span><b>{{WEAK}}</b></div><p>{{WEAK_WHY}}</p></div>
+    </div>
+    <div class="foot"><span>{{PERIOD}}</span><span class="cta">{{CTA}}<b>{{TAG}}</b></span></div>
+  </div>
+</div></div>
+</body></html>
