@@ -42,16 +42,16 @@ Ask "Make my AI title card" and the plugin reads your local Claude Code logs, co
 
 - ネットワークアクセス：なし（スクリプトは標準ライブラリのみ、外部 URL を開かない。ブラウザはネットワーク系の機能を切ったヘッドレスモードで、ローカルの HTML を撮影するだけ）
 - 外部送信：なし。採点のための秘匿化した抜粋は、ユーザー自身の Claude Code セッション内で Claude が読む
-- 保存：カード画像（カレントディレクトリ、上書き前に確認）と、前回の6軸スコア（`~/.claude/my-ai-title/history.json`）
+- 保存：カード画像（デスクトップ。書き込めなければ `~/.claude/my-ai-title/`。上書きしない）と、前回の6軸スコア（`~/.claude/my-ai-title/history.json`）
 - 詳細：README の「データの扱い」
 
 ## 申請前のチェック
 
-- [ ] `claude plugin validate . --strict` が通る
-- [ ] `claude plugin validate . --strict --profile directory` が通る（アイコンが必要。下記）
-- [ ] `python3 -m unittest discover -s tests` が通る
-- [ ] アイコンを用意する：512〜2048px の正方形 PNG を `.claude-plugin/icon.png` に置く（SVG・WebP は不可、2MB 未満）。**ディレクトリのアイコンになるのは、最初に保存・申請したときの1回だけ**なので、申請前に確定させる
+- [x] `claude plugin validate . --strict` が通る
+- [x] `claude plugin validate . --strict --profile directory` が通る（アイコンが必要。下記）
+- [x] `python3 -m unittest discover -s tests` が通る
+- [x] アイコンを用意する：512〜2048px の正方形 PNG を `.claude-plugin/icon.png` に置く（SVG・WebP は不可、2MB 未満）。**ディレクトリのアイコンになるのは、最初に保存・申請したときの1回だけ**なので、申請前に確定させる
 - [ ] キャラクター画像のライセンス文面（`skills/my-ai-title/assets/characters/LICENSE`）を最終確認する
-- [ ] リポジトリに実ログ・秘密情報・個人のパスが含まれていないことを確認する
-- [ ] 名前・ロゴ・見た目に「Claude」や Claude のロゴ、Claude Code の画面を思わせる要素を使っていない
+- [x] リポジトリに実ログ・秘密情報・個人のパスが含まれていないことを確認する
+- [x] 名前・ロゴ・見た目に「Claude」や Claude のロゴ、Claude Code の画面を思わせる要素を使っていない
 - [ ] main に push 済み。GitHub からインストールして動くことを確認した

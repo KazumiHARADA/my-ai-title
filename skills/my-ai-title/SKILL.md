@@ -39,9 +39,18 @@ All intermediate files go in a temporary work directory (`$WORK`, e.g. created w
    `python3 ${CLAUDE_SKILL_DIR}/scripts/choose.py --scores $WORK/scores.json --metrics $WORK/metrics.json --lang <ja|en> --out $WORK/card.json --save-history`
    This picks the type, ability, quirk and rare status with the rules in [references/types.md](references/types.md) and fills in its fixed wording. `--save-history` keeps only the six scores (in `~/.claude/my-ai-title/history.json`) so the next run can detect growth. For a second language, run it again with the other `--lang`.
 7. **Render** — Run
-   `python3 ${CLAUDE_SKILL_DIR}/scripts/render.py --card $WORK/card.json --out ./my-ai-title-card.png`
-   (English: `--out ./my-ai-title-card-en.png`). If it exits with code 3, the file already exists: ask the user, and only if they agree, rerun with `--force`. It uses a local Chromium-based browser if one is installed, otherwise draws a simpler card with Pillow; tell the user if the message says a fallback was used.
-8. **Show** — Show the image and tell the user where it was saved. Offer the other language.
+   `python3 ${CLAUDE_SKILL_DIR}/scripts/render.py --card $WORK/card.json`
+   with no `--out` unless the user named a path. The card goes to `~/Desktop` (or, if that cannot be written, `~/.claude/my-ai-title`, then the working directory), named with today's date and never overwriting an earlier card, and is opened in the image viewer. If the user named a path and the script exits with code 3, the file already exists: ask the user, and only if they agree, rerun with `--force`. It uses a local Chromium-based browser if one is installed, otherwise draws a simpler card with Pillow; tell the user if the message says a fallback was used. If the message says the card could not be opened, say so.
+8. **Report** — If the card was opened, do not read the PNG back; otherwise show it. Reply with this report every time, in the output language (an English example is in parentheses):
+
+   - 能力【ability name】: ability why (Ability [name]: why)
+     - クセ【quirk name】: quirk why (Quirk [name]: why) — leave out the why when it is empty
+   - One sentence on what was read: the scope (this repository / all projects / the named project), the period, the number of sessions from `metrics.json`, and that only redacted excerpts and totals were used.
+   - A table with one row per axis, in the order 文脈・委任・検証・自律・効率・仕組み (Context, Delegation, Verification, Autonomy, Efficiency, Systems), and the columns 軸 / 点 / 根拠 (Axis / Score / Evidence). Evidence is two or three plain sentences from `evidence` and, for a 4 or 2, `gaps`: what the user does, then what is still missing.
+   - 伸びしろ（axis）(Room to grow (axis)): for the lowest-scoring axis (on a tie, the one with the most concrete gap), the main cause seen in the samples and one or two concrete things to try next time. Leave this out when every axis is 5.
+   - The saved path of the card. Offer the other language.
+
+   The report stays free of code, company names, file names, project names and people's names, like the card.
 
 ## Output language
 

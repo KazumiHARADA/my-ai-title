@@ -2,7 +2,7 @@
 """card.json -> 1200x675 PNG.
 
 Usage:
-    python3 render.py --card card.json [--out my-ai-title-card.png] [--force]
+    python3 render.py --card card.json [--out PATH] [--force] [--no-open]
                       [--renderer auto|browser|playwright|pillow]
 
 Renderers, in order (auto):
@@ -12,12 +12,19 @@ Renderers, in order (auto):
   3. Pillow, drawing a simplified card (Latin and CJK). If no CJK font is
      found, the card is rendered in English instead.
 
-Nothing is fetched from the network. Existing files are not overwritten
-unless --force is given (exit code 3 means "file exists").
+Without --out the card goes to the first writable folder of ~/Desktop,
+~/.claude/my-ai-title and the current directory, named with today's date
+(my-ai-title-card-2026-11-16.png, then -2, -3, ...), so it never overwrites.
+With --out, an existing file is not overwritten unless --force is given
+(exit code 3 means "file exists").
+
+The finished card is opened in the system's image viewer unless --no-open.
+Nothing is fetched from the network.
 """
 from __future__ import annotations
 
 import argparse
+import datetime
 import base64
 import html
 import json
@@ -32,7 +39,7 @@ import tempfile
 import time
 import zlib
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
@@ -280,6 +287,58 @@ def render_playwright(html_doc: str, out: Path) -> bool:
         return False
 
 
+# --- output ----------------------------------------------------------------------------
+
+def output_dirs() -> List[Tuple[Path, bool]]:
+    """Candidate folders in order, each with whether it may be created."""
+    home = Path.home()
+    return [(home / "Desktop", False), (home / ".claude" / "my-ai-title", True), (Path.cwd(), False)]
+
+
+def writable(folder: Path, create: bool = False) -> bool:
+    """True if a file can actually be created there.
+
+    os.access is not enough: macOS privacy controls and sandboxes can refuse
+    a write that the permission bits allow, so try one.
+    """
+    try:
+        if create:
+            folder.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=folder, prefix=".my-ai-title-", suffix=".tmp"):
+            pass
+        return True
+    except OSError:
+        return False
+
+
+def default_out(lang: str, dirs: Optional[List[Tuple[Path, bool]]] = None,
+                today: Optional[datetime.date] = None) -> Path:
+    folder = next((d for d, create in (dirs or output_dirs()) if writable(d, create)), Path.cwd())
+    stem = "my-ai-title-card" + ("-en" if lang == "en" else "") + "-" + (today or datetime.date.today()).isoformat()
+    out = folder / f"{stem}.png"
+    n = 2
+    while out.exists():
+        out = folder / f"{stem}-{n}.png"
+        n += 1
+    return out
+
+
+def open_file(path: Path) -> bool:
+    """Open the image in the system viewer. False if that was not possible."""
+    try:
+        system = platform.system()
+        if system == "Windows":
+            os.startfile(str(path))  # type: ignore[attr-defined]
+            return True
+        cmd = "open" if system == "Darwin" else shutil.which("xdg-open")
+        if not cmd:
+            return False
+        return subprocess.run([cmd, str(path)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                              timeout=15).returncode == 0
+    except (OSError, subprocess.SubprocessError):
+        return False
+
+
 # --- main ------------------------------------------------------------------------------
 
 def render(card: dict, out: Path, renderer: str = "auto") -> str:
@@ -304,17 +363,23 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--card", type=Path, required=True)
     ap.add_argument("--out", type=Path, default=None,
-                    help="default: ./my-ai-title-card.png (English: ./my-ai-title-card-en.png)")
-    ap.add_argument("--force", action="store_true", help="overwrite an existing file")
+                    help="default: ~/Desktop/my-ai-title-card-<date>.png (see above)")
+    ap.add_argument("--force", action="store_true", help="overwrite an existing --out file")
+    ap.add_argument("--no-open", action="store_true", help="do not open the card after rendering")
     ap.add_argument("--renderer", choices=("auto", "browser", "playwright", "pillow"), default="auto")
     args = ap.parse_args(argv)
     card = json.loads(args.card.read_text(encoding="utf-8"))
-    out = args.out or Path("my-ai-title-card-en.png" if card.get("lang") == "en" else "my-ai-title-card.png")
-    if out.exists() and not args.force:
-        print(f"{out} already exists. Ask the user, then rerun with --force to overwrite.", file=sys.stderr)
-        return EXIT_EXISTS
+    if args.out:
+        out = args.out
+        if out.exists() and not args.force:
+            print(f"{out} already exists. Ask the user, then rerun with --force to overwrite.", file=sys.stderr)
+            return EXIT_EXISTS
+    else:
+        out = default_out(card.get("lang", "ja"))
     used = render(card, out, args.renderer)
     print(f"rendered with {used} -> {out.resolve()}", file=sys.stderr)
+    if not args.no_open:
+        print("opened" if open_file(out) else "could not open it automatically", file=sys.stderr)
     return 0
 
 

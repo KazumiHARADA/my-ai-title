@@ -54,7 +54,7 @@ Make my AI title card in English
 
 Without a language, the card uses the language that appears most in your logs (Japanese or English; other languages get the English card).
 
-The card is saved in the current directory as `my-ai-title-card-en.png` (Japanese: `my-ai-title-card.png`). If a file with that name exists, you are asked before it is overwritten.
+The card is saved on your Desktop with the date in its name, such as `my-ai-title-card-en-2026-11-16.png` (Japanese: `my-ai-title-card-…`), and opened in your image viewer. Running it again on the same day adds `-2`, `-3`, so earlier cards are never overwritten. If the Desktop cannot be written, it goes to `~/.claude/my-ai-title/`, then the current directory. Along with the card, the chat shows the score and evidence for each of the six axes and how to raise the lowest one.
 
 ## How your data is handled
 
@@ -62,6 +62,7 @@ The card is saved in the current directory as `my-ai-title-card-en.png` (Japanes
 - **Excerpts of your logs are sent to Claude (Anthropic's API) for scoring.** A few characteristic sessions are picked, redacted, and read by Claude through the same path as your normal Claude Code session (your instructions and the AI's final reports, for example). Logs, numbers, scores and images are never sent to any other service or to any server of ours.
 - **Redaction:** strings that look like API keys, tokens or passwords, e-mail addresses, URLs, file paths, host names, and likely company, person and place names are masked; code blocks and pasted logs are omitted. This is automatic and cannot catch every proper noun (for example place names written only in kanji). By default only the current project's sessions are read, so other projects' content is never sent.
 - **Never on the card:** specific numbers (counts, ratios, durations, times of day), anything that reveals working hours or time away, and work details such as code, company, file or project names.
+- **What it launches:** to turn the card into an image, it starts an installed Chromium-based browser (Chrome, Edge, Brave and so on) in headless mode with its network features turned off, and screenshots a locally built HTML page. Without a browser it draws the card with Pillow. The finished card is opened in your system's image viewer.
 - **What stays on your machine:** the card image, and your previous six scores for growth detection (`~/.claude/my-ai-title/history.json`, scores and dates only). Intermediate files go to a temporary directory.
 
 ## How it works

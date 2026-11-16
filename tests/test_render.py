@@ -109,6 +109,32 @@ class TestCli(unittest.TestCase):
         finally:
             shutil.rmtree(tmp)
 
+    def test_default_out_prefers_first_writable_folder(self):
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            day = render.datetime.date(2026, 11, 16)
+            missing, fallback = tmp / "Desktop", tmp / "claude" / "my-ai-title"
+            out = render.default_out("ja", [(missing, False), (fallback, True)], day)
+            self.assertFalse(missing.exists())   # never created
+            self.assertEqual(out, fallback / "my-ai-title-card-2026-11-16.png")
+            missing.mkdir()
+            out = render.default_out("en", [(missing, False), (fallback, True)], day)
+            self.assertEqual(out, missing / "my-ai-title-card-en-2026-11-16.png")
+            self.assertEqual(list(missing.iterdir()), [])   # the write probe leaves nothing behind
+        finally:
+            shutil.rmtree(tmp)
+
+    def test_default_out_never_overwrites(self):
+        tmp = Path(tempfile.mkdtemp())
+        try:
+            day = render.datetime.date(2026, 11, 16)
+            (tmp / "my-ai-title-card-2026-11-16.png").write_bytes(b"keep")
+            (tmp / "my-ai-title-card-2026-11-16-2.png").write_bytes(b"keep")
+            out = render.default_out("ja", [(tmp, False)], day)
+            self.assertEqual(out.name, "my-ai-title-card-2026-11-16-3.png")
+        finally:
+            shutil.rmtree(tmp)
+
     def test_browser_override(self):
         old = os.environ.get("MY_AI_TITLE_BROWSER")
         os.environ["MY_AI_TITLE_BROWSER"] = "/nonexistent/chrome"
