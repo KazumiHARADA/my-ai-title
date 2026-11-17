@@ -36,7 +36,7 @@ from aititle.selection import (JUDGMENTS, Ctx, Selection, largest_growth, select
 
 SKILL_DIR = Path(__file__).resolve().parents[1]
 CHAR_DIR = SKILL_DIR / "assets" / "characters"
-HASHTAG = {"ja": "#AI肩書き診断", "en": "#MyAITitle"}
+HASHTAG = "#MyAITitle"  # one tag for both languages, so all cards gather in one place
 HISTORY_KEEP = 20
 HISTORY_MIN_AGE = timedelta(hours=24)  # runs within a day replace each other
 
@@ -128,7 +128,7 @@ def build_card(db: typesdb.TypesDB, sel: Selection, scores: Dict[str, int], days
         "days": days,
         "growth_axis": sel.growth_axis,
         "period": period_text(days, lang),
-        "hashtag": HASHTAG[lang],
+        "hashtag": HASHTAG,
         "image": pick_image(db, sel, char_dir),
     }
 

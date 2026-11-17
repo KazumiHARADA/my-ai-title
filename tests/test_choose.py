@@ -232,7 +232,7 @@ class TestCard(unittest.TestCase):
         self.assertEqual(card["period"], "直近30日のClaude Codeログより")
         self.assertEqual(card["image"], "assets/characters/sniper_silence.png")
         self.assertEqual(card["no"], "No.21")
-        self.assertEqual(card["hashtag"], "#AI肩書き診断")
+        self.assertEqual(card["hashtag"], "#MyAITitle")
 
     def test_rare_swaps_epithet_quote_and_image(self):
         m = metrics(intervention__short_prompt_share=0.9, intervention__tasks_within_2_prompts_no_rework=12)
