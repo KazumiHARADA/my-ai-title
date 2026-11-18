@@ -2,11 +2,11 @@
 
 [日本語](README.md)
 
-A plugin that reads your Claude Code session logs, scores how you work with AI on six axes, and makes one trading-card style image you can post straight to X or anywhere else.
+A skill that reads your Codex or Claude Code session logs, scores how you work with AI on six axes, and makes one trading-card style image you can post straight to X or anywhere else.
 
 ![Sample card (English)](docs/images/sample-en.png)
 
-> Unofficial tool. Not affiliated with Anthropic.
+> Unofficial tool. Not affiliated with OpenAI or Anthropic.
 
 ## What it does
 
@@ -17,13 +17,25 @@ A plugin that reads your Claude Code session logs, scores how you work with AI o
 
 ## Requirements
 
-- Claude Code
+- Codex or Claude Code
 - Python 3.8 or later (no extra packages)
 - For drawing the card, one of:
   - Chrome, Edge, Brave or Chromium (recommended)
   - Otherwise Pillow (`python3 -m pip install Pillow`), which draws a simpler card
 
 ## Install
+
+### Codex
+
+Ask Codex to install the skill from this repository:
+
+```
+Use $skill-installer to install my-ai-title from https://github.com/KazumiHARADA/my-ai-title/tree/main/skills/my-ai-title
+```
+
+For local development, clone the repository and symlink `skills/my-ai-title` into `~/.agents/skills/my-ai-title`. Codex supports symlinked skill folders and detects changes automatically.
+
+### Claude Code
 
 Inside Claude Code:
 
@@ -41,7 +53,7 @@ claude plugin install my-ai-title@kharada
 
 ## Usage
 
-Open Claude Code in the project you want to diagnose and ask. Only **that project's sessions** are used (the git root and below, worktrees included).
+Open Codex or Claude Code in the project you want to diagnose and ask. Only **that product's sessions for the current project** are used (the git root and worktrees included).
 
 ```
 Make my AI title card in English
@@ -54,29 +66,29 @@ Make my AI title card in English
 
 Without a language, the card uses the language that appears most in your logs (Japanese or English; other languages get the English card).
 
-The card is saved on your Desktop with the date in its name, such as `my-ai-title-card-en-2026-11-16.png` (Japanese: `my-ai-title-card-…`), and opened in your image viewer. Running it again on the same day adds `-2`, `-3`, so earlier cards are never overwritten. If the Desktop cannot be written, it goes to `~/.claude/my-ai-title/`, then the current directory. Along with the card, the chat shows the score and evidence for each of the six axes and how to raise the lowest one.
+The card is saved on your Desktop with the date in its name, such as `my-ai-title-card-en-2026-11-16.png` (Japanese: `my-ai-title-card-…`), and opened in your image viewer. Running it again on the same day adds `-2`, `-3`, so earlier cards are never overwritten. If the Desktop cannot be written, it goes to `~/.codex/my-ai-title/` when run in Codex or `~/.claude/my-ai-title/` in Claude Code, then the current directory. Along with the card, the chat shows the score and evidence for each of the six axes and how to raise the lowest one.
 
 ## How your data is handled
 
-- **Local scripts read the logs.** They read the session logs in `~/.claude/projects` and compute counts and ratios on your machine. The scripts never access the network.
-- **Excerpts of your logs are sent to Claude (Anthropic's API) for scoring.** A few characteristic sessions are picked, redacted, and read by Claude through the same path as your normal Claude Code session (your instructions and the AI's final reports, for example). Logs, numbers, scores and images are never sent to any other service or to any server of ours.
+- **Local scripts read the logs.** They read the selected product's local session logs (`~/.codex/sessions` and `~/.codex/archived_sessions`, or `~/.claude/projects`) and compute counts and ratios on your machine. The scripts never access the network.
+- **Redacted excerpts are read by the AI already serving your session.** A few characteristic sessions are picked, redacted, and read through the same provider path as your normal Codex or Claude Code session (OpenAI or Anthropic). Logs, numbers, scores and images are never sent to any additional service or to any server of ours.
 - **Redaction:** strings that look like API keys, tokens or passwords, e-mail addresses, URLs, file paths, host names, and likely company, person and place names are masked; code blocks and pasted logs are omitted. This is automatic and cannot catch every proper noun (for example place names written only in kanji). By default only the current project's sessions are read, so other projects' content is never sent.
 - **Never on the card:** specific numbers (counts, ratios, durations, times of day), anything that reveals working hours or time away, and work details such as code, company, file or project names.
 - **What it launches:** to turn the card into an image, it starts an installed Chromium-based browser (Chrome, Edge, Brave and so on) in headless mode with its network features turned off, and screenshots a locally built HTML page. Without a browser it draws the card with Pillow. The finished card is opened in your system's image viewer.
-- **What stays on your machine:** the card image, and your previous six scores for growth detection (`~/.claude/my-ai-title/history.json`, scores and dates only). Intermediate files go to a temporary directory.
+- **What stays on your machine:** the card image, and your previous six scores for growth detection (`~/.codex/my-ai-title/history.json` or `~/.claude/my-ai-title/history.json`, scores and dates only). Intermediate files go to a temporary directory.
 
 ## How it works
 
 | Step | Done by |
 |---|---|
 | Logs → numeric metrics | Scripts (the same logs always give the same numbers) |
-| Scoring the six axes, judging some conditions | Claude, following the [rubric](skills/my-ai-title/references/rubric.md) |
+| Scoring the six axes, judging some conditions | The active AI host, following the [rubric](skills/my-ai-title/references/rubric.md) |
 | Type, ability, quirk, rare, and the card wording | Scripts, using only the fixed text in the [type definitions](skills/my-ai-title/references/types.md) |
 
 ## License
 
 - Code: [MIT License](LICENSE)
-- Character artwork: under a separate license. It may be used only within this plugin (including sharing the cards it generates); redistribution, modification and commercial use are not permitted. See [assets/characters/LICENSE](skills/my-ai-title/assets/characters/LICENSE).
+- Character artwork: under a separate license. It may be used only within this skill/plugin (including sharing the cards it generates); redistribution, modification and commercial use are not permitted. See [assets/characters/LICENSE](skills/my-ai-title/assets/characters/LICENSE).
 
 ## Development
 

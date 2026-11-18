@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-"""Claude Code session logs -> metrics.json (numbers only).
+"""Claude Code or Codex session logs -> metrics.json (numbers only).
 
 Usage:
     python3 extract.py [--days 30 | --since YYYY-MM-DD [--until YYYY-MM-DD]]
-                       [--project DIR | --all-projects] [--logs-dir DIR] [--out metrics.json]
+                       [--source claude|codex] [--project DIR | --all-projects]
+                       [--logs-dir DIR] [--out metrics.json]
 
 By default only sessions of the current project (the git root of the working
 directory, worktrees included) are read.
@@ -23,7 +24,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from aititle import scope  # noqa: E402
 from aititle.metrics import analyze, build_metrics  # noqa: E402
-from aititle.sources import claude_code  # noqa: E402
+from aititle.sources import claude_code, get as get_source  # noqa: E402
 
 HISTORY_DAYS = 60  # look-back before the window, for "new tools this period"
 
@@ -41,12 +42,15 @@ def window(args: argparse.Namespace) -> Tuple[datetime, datetime]:
     return since, until
 
 
-def run(logs_dir: Optional[Path], since: datetime, until: datetime, project: Optional[str] = None) -> dict:
-    read = claude_code.read_sessions(logs_dir, since, until,
-                                     history_since=since - timedelta(days=HISTORY_DAYS), project=project)
+def run(logs_dir: Optional[Path], since: datetime, until: datetime, project: Optional[str] = None,
+        source: str = "claude") -> dict:
+    reader = get_source(source)
+    read = reader.read_sessions(logs_dir, since, until,
+                                history_since=since - timedelta(days=HISTORY_DAYS), project=project)
     stats = analyze(read.sessions)
-    on_disk = claude_code.skill_names_on_disk(logs_dir)
+    on_disk = reader.skill_names_on_disk(logs_dir)
     metrics = build_metrics(stats, read, since, until, on_disk)
+    metrics["source"] = source
     metrics["scope"] = "project" if project else "all"   # the path itself is not recorded
     return metrics
 
@@ -56,13 +60,14 @@ def main(argv=None) -> int:
     ap.add_argument("--days", type=int, default=30)
     ap.add_argument("--since", type=_date)
     ap.add_argument("--until", type=_date)
+    ap.add_argument("--source", choices=("claude", "codex"), default="claude")
     ap.add_argument("--logs-dir", type=Path, default=None,
-                    help="default: $CLAUDE_CONFIG_DIR/projects or ~/.claude/projects")
+                    help="default: the selected source's local configuration directory")
     scope.add_arguments(ap)
     ap.add_argument("--out", type=Path, default=Path("metrics.json"))
     args = ap.parse_args(argv)
     since, until = window(args)
-    metrics = run(args.logs_dir, since, until, scope.resolve(args))
+    metrics = run(args.logs_dir, since, until, scope.resolve(args), args.source)
     args.out.write_text(json.dumps(metrics, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     d = metrics["data"]
     print(f"scope={metrics['scope']} sessions={d['sessions']} tasks={d['tasks']} prompts={d['human_prompts']} "

@@ -1,6 +1,6 @@
 ---
 name: my-ai-title
-description: Diagnose how the user works with AI from their local Claude Code session logs, score six axes, and render a shareable trading-card PNG with their "AI title". Use when the user asks for AI肩書き診断, "AI肩書き診断して", "私のAIの使い方を診断して", "My AI Title", or wants a card/title describing their AI working style.
+description: Diagnose how the user works with AI from local Codex or Claude Code session logs, score six axes, and render a shareable trading-card PNG with their "AI title". Use when the user asks for AI肩書き診断, "AI肩書き診断して", "私のAIの使い方を診断して", "My AI Title", or a card/title describing their AI working style.
 allowed-tools: Bash(python3 ${CLAUDE_SKILL_DIR}/scripts/*)
 ---
 
@@ -10,25 +10,27 @@ Produce one 1200×675 PNG card that describes how the user works with AI. Number
 
 ## Privacy rules (always)
 
-- Never open or read raw session logs (`~/.claude/projects/**`) yourself. Read only the redacted output of `sample.py` and the numbers in `metrics.json`.
+- Never open or read raw session logs (`~/.claude/projects/**`, `~/.codex/sessions/**`, or `~/.codex/archived_sessions/**`) yourself. Read only the redacted output of `sample.py` and the numbers in `metrics.json`.
 - Send nothing anywhere. No network access is needed.
 - The card never shows counts, ratios, durations, times of day, or anything that reveals working hours or time away.
 - The card never shows code, company names, file names, or project names.
 
 ## Steps
 
-All intermediate files go in a temporary work directory (`$WORK`, e.g. created with `mktemp -d`). Do not write them into the user's project. Run every script from the user's working directory (do not `cd` into `$WORK`): the default scope is decided by the working directory.
+All intermediate files go in a temporary work directory (`$MY_AI_TITLE_WORK`, created with `mktemp -d`). Do not write them into the user's project. Run every script from the user's working directory (do not `cd` into the temporary directory): the default scope is decided by the working directory.
+
+Set `MY_AI_TITLE_SOURCE` to `codex` when running in Codex, otherwise `claude`. Set `MY_AI_TITLE_SKILL_DIR` to this skill's loaded directory. In a standard installation it is `${CLAUDE_SKILL_DIR}` in Claude Code or `$HOME/.agents/skills/my-ai-title` in Codex.
 
 1. **Period and scope** — Default is the last 30 days of the **current project**: the scripts use the git root of the working directory (worktrees included) unless told otherwise. Use the user's period if they give one. If the user asks for all projects, add `--all-projects`; for another project, add `--project <dir>`. Pass the same scope option to both `extract.py` and `sample.py`.
 2. **Extract** — Run
-   `python3 ${CLAUDE_SKILL_DIR}/scripts/extract.py --days 30 --out $WORK/metrics.json`
+   `python3 "$MY_AI_TITLE_SKILL_DIR/scripts/extract.py" --source "$MY_AI_TITLE_SOURCE" --days 30 --out "$MY_AI_TITLE_WORK/metrics.json"`
 3. **Check data volume** — If `metrics.json` shows fewer than 5 sessions, tell the user and ask whether to stop, continue with lower accuracy, or (when `scope` is `project`) widen to all projects with `--all-projects`.
 4. **Sample** — Run
-   `python3 ${CLAUDE_SKILL_DIR}/scripts/sample.py --metrics $WORK/metrics.json --out $WORK/samples.json`
-   and read `$WORK/samples.json` (already redacted).
+   `python3 "$MY_AI_TITLE_SKILL_DIR/scripts/sample.py" --source "$MY_AI_TITLE_SOURCE" --metrics "$MY_AI_TITLE_WORK/metrics.json" --out "$MY_AI_TITLE_WORK/samples.json"`
+   and read `$MY_AI_TITLE_WORK/samples.json` (already redacted).
 5. **Score** — Following [references/rubric.md](references/rubric.md), score the six axes 1–5 from the samples and metrics (apply the rubric's cap rule). Match the evidence to the level 1/3/5 descriptions: when it matches level 5, give 5. A 4 (or a 2) needs a named gap — the specific part of the level-5 (or level-3) description that is not met — written in `gaps`. Never lower a score just to be cautious. Then decide each judgment listed by
-   `python3 ${CLAUDE_SKILL_DIR}/scripts/choose.py --list-judgments`
-   as `"no"`, `"yes"` or `"strong"` (when unsure, `"no"`). Write `$WORK/scores.json`:
+   `python3 "$MY_AI_TITLE_SKILL_DIR/scripts/choose.py" --list-judgments`
+   as `"no"`, `"yes"` or `"strong"` (when unsure, `"no"`). Write `$MY_AI_TITLE_WORK/scores.json`:
    ```json
    {"scores": {"context": 3, "delegation": 4, "verification": 4, "autonomy": 3, "efficiency": 3, "systems": 2},
     "judgments": {"precision": "yes", "keeneye": "no"},
@@ -36,11 +38,11 @@ All intermediate files go in a temporary work directory (`$WORK`, e.g. created w
     "gaps": {"delegation": "which part of the level-5 description is not met (for every 4 or 2)"}}
    ```
 6. **Choose** — Run
-   `python3 ${CLAUDE_SKILL_DIR}/scripts/choose.py --scores $WORK/scores.json --metrics $WORK/metrics.json --lang <ja|en> --out $WORK/card.json --save-history`
-   This picks the type, ability, quirk and rare status with the rules in [references/types.md](references/types.md) and fills in its fixed wording. `--save-history` keeps only the six scores (in `~/.claude/my-ai-title/history.json`) so the next run can detect growth. For a second language, run it again with the other `--lang`.
+   `python3 "$MY_AI_TITLE_SKILL_DIR/scripts/choose.py" --scores "$MY_AI_TITLE_WORK/scores.json" --metrics "$MY_AI_TITLE_WORK/metrics.json" --lang <ja|en> --out "$MY_AI_TITLE_WORK/card.json" --save-history`
+   This picks the type, ability, quirk and rare status with the rules in [references/types.md](references/types.md) and fills in its fixed wording. `--save-history` keeps only the six scores (in `~/.claude/my-ai-title/history.json` or `~/.codex/my-ai-title/history.json`) so the next run can detect growth. For a second language, run it again with the other `--lang`.
 7. **Render** — Run
-   `python3 ${CLAUDE_SKILL_DIR}/scripts/render.py --card $WORK/card.json`
-   with no `--out` unless the user named a path. The card goes to `~/Desktop` (or, if that cannot be written, `~/.claude/my-ai-title`, then the working directory), named with today's date and never overwriting an earlier card, and is opened in the image viewer. If the user named a path and the script exits with code 3, the file already exists: ask the user, and only if they agree, rerun with `--force`. It uses a local Chromium-based browser if one is installed, otherwise draws a simpler card with Pillow; tell the user if the message says a fallback was used. If the message says the card could not be opened, say so.
+   `python3 "$MY_AI_TITLE_SKILL_DIR/scripts/render.py" --card "$MY_AI_TITLE_WORK/card.json"`
+   with no `--out` unless the user named a path. The card goes to `~/Desktop` (or, if that cannot be written, the selected host's `my-ai-title` config directory, then the working directory), named with today's date and never overwriting an earlier card, and is opened in the image viewer. If the user named a path and the script exits with code 3, ask before rerunning with `--force`. It uses a local Chromium-based browser if one is installed, otherwise draws a simpler card with Pillow; tell the user if the message says a fallback was used. If the message says the card could not be opened, say so.
 8. **Report** — If the card was opened, do not read the PNG back; otherwise show it. Reply with this report every time, in the output language (an English example is in parentheses):
 
    - 能力【ability name】: ability why (Ability [name]: why)

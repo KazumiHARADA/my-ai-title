@@ -124,6 +124,11 @@ class TestCli(unittest.TestCase):
         finally:
             shutil.rmtree(tmp)
 
+    def test_output_dirs_use_selected_host(self):
+        self.assertEqual(render.output_dirs("codex")[1][0].name, "my-ai-title")
+        self.assertEqual(render.output_dirs("codex")[1][0].parent.name, ".codex")
+        self.assertEqual(render.output_dirs("claude")[1][0].parent.name, ".claude")
+
     def test_default_out_never_overwrites(self):
         tmp = Path(tempfile.mkdtemp())
         try:

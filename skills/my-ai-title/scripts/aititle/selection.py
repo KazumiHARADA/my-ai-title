@@ -4,7 +4,7 @@ Every numeric threshold below is provisional ("仮置き" in types.md). They are
 gathered here so they can be tuned against real distributions later.
 
 Condition strength ("倍率" in types.md) is value / threshold, so 1.0 means just
-satisfied. Strengths are capped at RATIO_CAP so that conditions Claude judges
+satisfied. Strengths are capped at RATIO_CAP so that conditions the AI host judges
 （判定） can compete with counts; ties at the cap are broken by the uncapped
 value, then by table order.
 """
@@ -171,7 +171,7 @@ QUIRK_RULES = {
     "sleeping": at_least("systems.own_mechanisms_unused", 3),
 }
 
-# Judgments Claude must make (written to scores.json "judgments").
+# Judgments the AI host must make (written to scores.json "judgments").
 JUDGMENTS = {
     "keeneye": "The human points out AI mistakes and is usually right (appraiser).",
     "clarity": "Tasks keep finishing without rework caused by missing information (architect).",
