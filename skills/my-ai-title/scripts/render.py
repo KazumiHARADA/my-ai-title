@@ -13,7 +13,7 @@ Renderers, in order (auto):
      found, the card is rendered in English instead.
 
 Without --out the card goes to the first writable folder of ~/Desktop,
-~/.claude/my-ai-title and the current directory, named with today's date
+the selected host's local config directory and the current directory, named with today's date
 (my-ai-title-card-2026-11-16.png, then -2, -3, ...), so it never overwrites.
 With --out, an existing file is not overwritten unless --force is given
 (exit code 3 means "file exists").
@@ -289,10 +289,14 @@ def render_playwright(html_doc: str, out: Path) -> bool:
 
 # --- output ----------------------------------------------------------------------------
 
-def output_dirs() -> List[Tuple[Path, bool]]:
+def output_dirs(source: str = "claude") -> List[Tuple[Path, bool]]:
     """Candidate folders in order, each with whether it may be created."""
     home = Path.home()
-    return [(home / "Desktop", False), (home / ".claude" / "my-ai-title", True), (Path.cwd(), False)]
+    if source == "codex":
+        config = Path(os.environ.get("CODEX_HOME") or home / ".codex")
+    else:
+        config = Path(os.environ.get("CLAUDE_CONFIG_DIR") or home / ".claude")
+    return [(home / "Desktop", False), (config / "my-ai-title", True), (Path.cwd(), False)]
 
 
 def writable(folder: Path, create: bool = False) -> bool:
@@ -312,8 +316,8 @@ def writable(folder: Path, create: bool = False) -> bool:
 
 
 def default_out(lang: str, dirs: Optional[List[Tuple[Path, bool]]] = None,
-                today: Optional[datetime.date] = None) -> Path:
-    folder = next((d for d, create in (dirs or output_dirs()) if writable(d, create)), Path.cwd())
+                today: Optional[datetime.date] = None, source: str = "claude") -> Path:
+    folder = next((d for d, create in (dirs or output_dirs(source)) if writable(d, create)), Path.cwd())
     stem = "my-ai-title-card" + ("-en" if lang == "en" else "") + "-" + (today or datetime.date.today()).isoformat()
     out = folder / f"{stem}.png"
     n = 2
@@ -375,7 +379,7 @@ def main(argv=None) -> int:
             print(f"{out} already exists. Ask the user, then rerun with --force to overwrite.", file=sys.stderr)
             return EXIT_EXISTS
     else:
-        out = default_out(card.get("lang", "ja"))
+        out = default_out(card.get("lang", "ja"), source=card.get("source", "claude"))
     used = render(card, out, args.renderer)
     print(f"rendered with {used} -> {out.resolve()}", file=sys.stderr)
     if not args.no_open:

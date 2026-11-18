@@ -1,0 +1,4 @@
+interface:
+  display_name: "My AI Title"
+  short_description: "Turn your AI work style into a shareable card"
+  default_prompt: "Use $my-ai-title to diagnose my AI working style and create my title card."

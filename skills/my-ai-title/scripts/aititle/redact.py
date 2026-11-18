@@ -1,4 +1,4 @@
-"""Redaction applied to every excerpt before Claude reads it.
+"""Redaction applied to every excerpt before the AI host reads it.
 
 When unsure, redact. Order matters: whole structures (code, secrets, URLs,
 paths) go first, then word-level rules.

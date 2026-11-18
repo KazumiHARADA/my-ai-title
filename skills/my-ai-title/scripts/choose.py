@@ -5,15 +5,15 @@ Usage:
     python3 choose.py --scores scores.json --metrics metrics.json --lang ja|en
                       [--out card.json] [--save-history] [--history PATH]
 
-scores.json (written by Claude):
+scores.json (written by the AI host):
     {"scores": {"context": 1-5, "delegation": ..., "verification": ..,
                 "autonomy": .., "efficiency": .., "systems": ..},
      "judgments": {"<name>": "no" | "yes" | "strong", ...}}
 Run with --list-judgments to see the judgment names.
 
 All card wording comes from references/types.md. The only state kept is the
-previous six scores (for "growth"), in ~/.claude/my-ai-title/history.json, and
-only when --save-history is given.
+previous six scores (for "growth"), in the selected host's local config
+directory, and only when --save-history is given.
 
 This file is not called select.py on purpose: that name would shadow Python's
 standard "select" module for every script in this directory.
@@ -41,8 +41,11 @@ HISTORY_KEEP = 20
 HISTORY_MIN_AGE = timedelta(hours=24)  # runs within a day replace each other
 
 
-def default_history() -> Path:
-    base = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.join(os.path.expanduser("~"), ".claude")
+def default_history(source: str = "claude") -> Path:
+    if source == "codex":
+        base = os.environ.get("CODEX_HOME") or os.path.join(os.path.expanduser("~"), ".codex")
+    else:
+        base = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.join(os.path.expanduser("~"), ".claude")
     return Path(base) / "my-ai-title" / "history.json"
 
 
@@ -92,14 +95,15 @@ def pick_image(db: typesdb.TypesDB, sel: Selection, char_dir: Path = CHAR_DIR) -
     return f"assets/characters/fallback/{t}.svg"
 
 
-def period_text(days: int, lang: str) -> str:
+def period_text(days: int, lang: str, source: str = "claude") -> str:
+    product = "Codex" if source == "codex" else "Claude Code"
     if lang == "ja":
-        return f"直近{days}日のClaude Codeログより"
-    return f"Last {days} days of Claude Code logs"
+        return f"直近{days}日の{product}ログより"
+    return f"Last {days} days of {product} logs"
 
 
 def build_card(db: typesdb.TypesDB, sel: Selection, scores: Dict[str, int], days: int, lang: str,
-               char_dir: Path = CHAR_DIR) -> dict:
+               char_dir: Path = CHAR_DIR, source: str = "claude") -> dict:
     t = db.types[sel.type]
     a = sel.ability
     epithet = a.rare_epithet if sel.rare else a.epithet
@@ -126,8 +130,9 @@ def build_card(db: typesdb.TypesDB, sel: Selection, scores: Dict[str, int], days
         "quirk": quirk,
         "scores": scores,
         "days": days,
+        "source": source,
         "growth_axis": sel.growth_axis,
-        "period": period_text(days, lang),
+        "period": period_text(days, lang, source),
         "hashtag": HASHTAG,
         "image": pick_image(db, sel, char_dir),
     }
@@ -140,7 +145,8 @@ def localize(card: dict, lang: str, db: Optional[typesdb.TypesDB] = None,
     quirk = None if card["quirk"]["id"] == "surplus" else next(q for q in db.quirks if q.id == card["quirk"]["id"])
     sel = Selection(type=card["type"], ability=db.ability(card["ability_id"]), ability_ratio=0.0,
                     quirk=quirk, rare=bool(card["rare"]), growth_axis=card.get("growth_axis"))
-    return build_card(db, sel, card["scores"], int(card.get("days") or 30), lang, char_dir)
+    return build_card(db, sel, card["scores"], int(card.get("days") or 30), lang, char_dir,
+                      card.get("source", "claude"))
 
 
 def run(scores_doc: dict, metrics: dict, lang: str, prev: Optional[Dict[str, int]],
@@ -152,7 +158,7 @@ def run(scores_doc: dict, metrics: dict, lang: str, prev: Optional[Dict[str, int
     ctx = Ctx(metrics=metrics, scores=scores, judgments=judgments, growth=largest_growth(scores, prev))
     sel = select(db, ctx)
     days = int(metrics.get("period", {}).get("days") or 30)
-    return build_card(db, sel, scores, days, lang, char_dir)
+    return build_card(db, sel, scores, days, lang, char_dir, metrics.get("source", "claude"))
 
 
 def main(argv=None) -> int:
@@ -173,7 +179,7 @@ def main(argv=None) -> int:
         ap.error("--scores and --metrics are required")
     scores_doc = json.loads(args.scores.read_text(encoding="utf-8"))
     metrics = json.loads(args.metrics.read_text(encoding="utf-8"))
-    hist_path = args.history or default_history()
+    hist_path = args.history or default_history(metrics.get("source", "claude"))
     history = load_history(hist_path)
     now = datetime.now(timezone.utc)
     gaps = scores_doc.get("gaps") or {}

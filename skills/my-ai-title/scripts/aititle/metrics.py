@@ -25,7 +25,7 @@ REPEAT_MIN_CLUSTER = 3             # near-duplicate prompts that form a "pattern
 PATTERN_FOLLOWUP = timedelta(days=3)  # mechanism made this soon after a pattern's last use
 PATTERN_QUIET = timedelta(days=7)     # ...and the pattern stayed gone at least this long
 
-# Cues that a follow-up prompt is a correction. Judged again by Claude from the
+# Cues that a follow-up prompt is a correction. Judged again by the AI host from the
 # samples; this is only an estimate.
 FIX_CUE_RE = re.compile(
     r"違う|ちがう|動かない|動いてない|うまくいかない|上手くいかない|おかしい|エラー|失敗"

@@ -1,8 +1,8 @@
 """Feature -> behavior evidence table.
 
 The rubric scores behavior, not features. This module is the single place that
-says "using feature X is evidence of behavior Y". When Claude Code (or another
-tool) adds or renames a feature, update only this file.
+says "using feature X is evidence of behavior Y". When a supported AI coding
+tool adds or renames a feature, update only this file.
 """
 from __future__ import annotations
 
@@ -52,7 +52,7 @@ VISUAL_TOOL_RE = re.compile(
 )
 IMAGE_FILE_RE = re.compile(r"\.(png|jpe?g|gif|webp|bmp)$", re.IGNORECASE)
 # Images Claude Code itself produced (e.g. PDF pages) are not visual checks.
-INTERNAL_PATH_RE = re.compile(r"[/\\](tool-results|\.claude[/\\]projects)[/\\]")
+INTERNAL_PATH_RE = re.compile(r"[/\\](tool-results|\.claude[/\\]projects|\.codex[/\\]sessions)[/\\]")
 
 # --- Shell command -> verification method / behavior -------------------------
 _W = r"(?:^|[\s;&|(/])"  # start of a command word
@@ -115,7 +115,9 @@ MECHANISM_FILE_RE = re.compile(
     r"[/\\](?:skills[/\\]([^/\\]+)[/\\]SKILL\.md"
     r"|\.claude[/\\](?:commands|agents)[/\\]([^/\\]+?)\.md)$"
 )
-SETTINGS_FILE_RE = re.compile(r"[/\\]\.claude[/\\]settings(\.local)?\.json$")
+SETTINGS_FILE_RE = re.compile(
+    r"[/\\]\.claude[/\\]settings(\.local)?\.json$|[/\\]\.codex[/\\]config\.toml$"
+)
 
 
 # This skill's own runs: the part of a session from the request that started a

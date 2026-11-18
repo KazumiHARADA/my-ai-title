@@ -1,8 +1,8 @@
 {
   "name": "my-ai-title",
   "displayName": "My AI Title",
-  "version": "0.5.1",
-  "description": "Reads your local Claude Code session logs, scores how you work with AI on six axes, and renders a shareable trading-card style PNG with your AI title (AI肩書き診断).",
+  "version": "0.6.0",
+  "description": "Reads local Codex or Claude Code session logs, scores how you work with AI on six axes, and renders a shareable trading-card style PNG with your AI title (AI肩書き診断).",
   "author": {
     "name": "KazumiHARADA",
     "url": "https://github.com/KazumiHARADA"
@@ -10,5 +10,5 @@
   "homepage": "https://github.com/KazumiHARADA/my-ai-title",
   "repository": "https://github.com/KazumiHARADA/my-ai-title",
   "license": "MIT",
-  "keywords": ["diagnosis", "card", "sns", "productivity", "japanese"]
+  "keywords": ["diagnosis", "card", "sns", "productivity", "japanese", "codex"]
 }

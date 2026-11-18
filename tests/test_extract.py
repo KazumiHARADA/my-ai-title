@@ -14,7 +14,7 @@ import extract
 from aititle import events as E
 from aititle import evidence as V
 from aititle.metrics import TASK_GAP, Turn, analyze, split_tasks
-from aititle.sources import claude_code
+from aititle.sources import claude_code, codex
 from aititle.textutil import dominant_language, similar_clusters, size_units
 
 SINCE = datetime(2026, 9, 25, tzinfo=timezone.utc)
@@ -168,6 +168,99 @@ class TestReader(unittest.TestCase):
             self.assertEqual(len(res.sessions), 3)
         finally:
             shutil.rmtree(tmp)
+
+
+class TestCodexReader(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        d = self.tmp / "sessions" / "2026" / "10" / "01"
+        d.mkdir(parents=True)
+        cwd = "/Users/demo/Projects/acme-shop"
+        rows = [
+            {"timestamp": "2026-10-01T00:00:00Z", "type": "session_meta", "payload": {
+                "id": "codex-main", "cwd": cwd, "cli_version": "1.2.3", "source": "vscode",
+                "runtime_workspace_roots": [cwd],
+                "git": {"branch": "feature/checkout", "repository_url": "https://example.invalid/acme/shop.git"}}},
+            {"timestamp": "2026-10-01T00:00:01Z", "type": "event_msg", "payload": {
+                "type": "item_completed", "item": {"type": "UserMessage", "id": "u1",
+                "content": [{"type": "text", "text": "Implement checkout and verify it"}]}}},
+            {"timestamp": "2026-10-01T00:00:02Z", "type": "response_item", "payload": {
+                "type": "custom_tool_call", "id": "raw1", "name": "exec", "input": "{\"cmd\":\"duplicate\"}"}},
+            {"timestamp": "2026-10-01T00:00:03Z", "type": "event_msg", "payload": {
+                "type": "item_completed", "item": {"type": "CommandExecution", "id": "c1",
+                "command": "python3 -m pytest -q", "cwd": cwd}}},
+            {"timestamp": "2026-10-01T00:00:04Z", "type": "event_msg", "payload": {
+                "type": "item_completed", "item": {"type": "FileChange", "id": "f1",
+                "changes": {cwd + "/src/cart.py": {"type": "update", "unified_diff": "secret"}}}}},
+            {"timestamp": "2026-10-01T00:00:05Z", "type": "event_msg", "payload": {
+                "type": "item_completed", "item": {"type": "SubAgentActivity", "id": "a1",
+                "kind": "started", "agent_path": "tests"}}},
+            {"timestamp": "2026-10-01T00:00:06Z", "type": "event_msg", "payload": {
+                "type": "item_completed", "item": {"type": "AgentMessage", "id": "m1",
+                "content": [{"type": "Text", "text": "Implemented and verified."}]}}},
+            {"timestamp": "2026-10-01T00:00:07Z", "type": "event_msg", "payload": {
+                "type": "item_completed", "item": {"type": "UserMessage", "id": "u2",
+                "content": [{"type": "text", "text": "Use $my-ai-title now"}]}}},
+            {"timestamp": "2026-10-01T00:00:08Z", "type": "event_msg", "payload": {
+                "type": "item_completed", "item": {"type": "CommandExecution", "id": "c2",
+                "command": "python3 /x/skills/my-ai-title/scripts/extract.py --source codex", "cwd": cwd}}},
+        ]
+        (d / "rollout-main.jsonl").write_text("\n".join(json.dumps(x) for x in rows) + "\n", encoding="utf-8")
+        sub = [
+            {"timestamp": "2026-10-01T00:00:00Z", "type": "session_meta", "payload": {
+                "id": "codex-sub", "cwd": cwd, "source": {"subagent": "tests"}, "parent_thread_id": "codex-main"}},
+            {"timestamp": "2026-10-01T00:00:02Z", "type": "event_msg", "payload": {
+                "type": "item_completed", "item": {"type": "UserMessage", "id": "su1",
+                "content": [{"type": "text", "text": "parent agent instruction"}]}}},
+        ]
+        (d / "rollout-sub.jsonl").write_text("\n".join(json.dumps(x) for x in sub) + "\n", encoding="utf-8")
+
+    def tearDown(self):
+        shutil.rmtree(self.tmp)
+
+    def test_completed_items_are_normalized_without_raw_duplicates(self):
+        read = codex.read_sessions(self.tmp, SINCE, UNTIL)
+        self.assertEqual(len(read.sessions), 1)
+        session = read.sessions[0]
+        prompts = [e.text for e in session.events if e.kind == E.PROMPT]
+        self.assertEqual(prompts, ["Implement checkout and verify it"])
+        tools = [e.tool for e in session.events if e.kind == E.TOOL_CALL]
+        self.assertEqual(tools, ["Bash", "Write", "Agent"])
+        self.assertNotIn("duplicate", [e.target for e in session.events])
+        self.assertEqual(session.versions, {"1.2.3"})
+        self.assertTrue({"acme-shop", "checkout", "demo"} <= {x.lower() for x in session.sensitive_terms})
+
+    def test_codex_metrics_and_project_filter(self):
+        metrics = extract.run(self.tmp, SINCE, UNTIL, "/Users/demo/Projects/acme-shop", "codex")
+        self.assertEqual(metrics["source"], "codex")
+        self.assertEqual(metrics["scope"], "project")
+        self.assertEqual(metrics["data"]["sessions"], 1)
+        self.assertEqual(metrics["verification"]["test_runs"], 1)
+        self.assertEqual(metrics["parallel"]["subagent_calls"], 1)
+        self.assertNotIn("acme", json.dumps(metrics).lower())
+
+    def test_legacy_response_items_fallback(self):
+        d = self.tmp / "archived_sessions"
+        d.mkdir()
+        rows = [
+            {"timestamp": "2026-10-02T00:00:00Z", "type": "session_meta", "payload": {
+                "id": "legacy", "cwd": "/Users/demo/Projects/legacy", "source": "vscode"}},
+            {"timestamp": "2026-10-02T00:00:01Z", "type": "response_item", "payload": {
+                "type": "message", "id": "u", "role": "user",
+                "content": [{"type": "input_text", "text": "Build it"}]}},
+            {"timestamp": "2026-10-02T00:00:02Z", "type": "response_item", "payload": {
+                "type": "custom_tool_call", "id": "t", "name": "exec",
+                "input": "{\"cmd\":\"npm run build\"}"}},
+            {"timestamp": "2026-10-02T00:00:03Z", "type": "response_item", "payload": {
+                "type": "message", "id": "a", "role": "assistant",
+                "content": [{"type": "output_text", "text": "Built."}]}},
+        ]
+        (d / "rollout-legacy.jsonl").write_text("\n".join(json.dumps(x) for x in rows) + "\n", encoding="utf-8")
+        read = codex.read_sessions(self.tmp, SINCE, UNTIL, project="/Users/demo/Projects/legacy")
+        self.assertEqual(len(read.sessions), 1)
+        stats = analyze(read.sessions)[0]
+        self.assertEqual(stats.turns[0].text, "Build it")
+        self.assertEqual(stats.turns[0].behaviors[V.V_BUILD], 1)
 
 
 class TestMetrics(unittest.TestCase):

@@ -23,6 +23,10 @@ def project_root(cwd: Optional[str] = None) -> str:
                              capture_output=True, text=True, timeout=5)
         if out.returncode == 0 and out.stdout.strip():
             root = out.stdout.strip()
+        common = subprocess.run(["git", "-C", cwd, "rev-parse", "--path-format=absolute", "--git-common-dir"],
+                                capture_output=True, text=True, timeout=5)
+        if common.returncode == 0 and os.path.basename(common.stdout.strip()) == ".git":
+            root = os.path.dirname(common.stdout.strip())
     except (OSError, subprocess.SubprocessError):
         pass
     return _WORKTREE_RE.sub("", root)

@@ -252,6 +252,13 @@ class TestCard(unittest.TestCase):
         self.assertEqual(card["hashtag"], "#MyAITitle")
         self.assertNotRegex(json.dumps(card, ensure_ascii=False), r"[぀-ヿ一-鿿]")
 
+    def test_codex_card_uses_codex_period_and_source(self):
+        m = metrics()
+        m["source"] = "codex"
+        card = choose.run({"scores": S(e=5)}, m, "en", None)
+        self.assertEqual(card["source"], "codex")
+        self.assertEqual(card["period"], "Last 30 days of Codex logs")
+
     def test_unsupported_language_falls_back_to_english(self):
         self.assertEqual(choose.run({"scores": S(e=5)}, metrics(), "fr", None)["lang"], "en")
 

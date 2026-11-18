@@ -2,7 +2,8 @@
 """Pick characteristic sessions and write redacted excerpts for scoring.
 
 Usage:
-    python3 sample.py --metrics metrics.json [--project DIR | --all-projects] [--logs-dir DIR] [--out samples.json]
+    python3 sample.py --metrics metrics.json [--source claude|codex]
+                      [--project DIR | --all-projects] [--logs-dir DIR] [--out samples.json]
 
 Use the same scope options as extract.py (default: the current project).
 
@@ -27,7 +28,7 @@ from aititle import evidence as V  # noqa: E402
 from aititle import scope  # noqa: E402
 from aititle.metrics import SessionStats, Turn, analyze  # noqa: E402
 from aititle.redact import redact  # noqa: E402
-from aititle.sources import claude_code  # noqa: E402
+from aititle.sources import claude_code, get as get_source  # noqa: E402
 
 MAX_SESSIONS = 10
 MAX_TURNS = 7
@@ -160,15 +161,19 @@ def build(stats: Sequence[SessionStats], limit: int = MAX_SESSIONS) -> dict:
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--metrics", type=Path, required=True, help="metrics.json from extract.py (for the period)")
+    ap.add_argument("--source", choices=("claude", "codex"), default=None,
+                    help="default: source recorded in metrics.json (or claude for older files)")
     ap.add_argument("--logs-dir", type=Path, default=None)
     scope.add_arguments(ap)
     ap.add_argument("--out", type=Path, default=Path("samples.json"))
     ap.add_argument("--max-sessions", type=int, default=MAX_SESSIONS)
     args = ap.parse_args(argv)
-    period = json.loads(args.metrics.read_text(encoding="utf-8"))["period"]
+    metrics = json.loads(args.metrics.read_text(encoding="utf-8"))
+    period = metrics["period"]
     since = claude_code.parse_ts(period["since"])
     until = claude_code.parse_ts(period["until"])
-    read = claude_code.read_sessions(args.logs_dir, since, until, project=scope.resolve(args))
+    reader = get_source(args.source or metrics.get("source", "claude"))
+    read = reader.read_sessions(args.logs_dir, since, until, project=scope.resolve(args))
     data = build(analyze(read.sessions), args.max_sessions)
     args.out.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"sessions sampled={len(data['sessions'])} -> {args.out}", file=sys.stderr)
